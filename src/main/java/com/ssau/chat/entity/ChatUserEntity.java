@@ -3,9 +3,7 @@ package com.ssau.chat.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Entity
 @Table(name = "chat_user") // Название таблицы в БД
@@ -14,7 +12,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ChatUser {
+public class ChatUserEntity {
 
     @EmbeddedId
     private ChatUserId id; // Составной ключ (chat_id, user_id)
@@ -22,12 +20,12 @@ public class ChatUser {
     @ManyToOne
     @MapsId("chatId") // Связь с полем chatId из составного ключа
     @JoinColumn(name = "chat_id", nullable = false)
-    private Chat chat;
+    private ChatEntity chat;
 
     @ManyToOne
     @MapsId("userId") // Связь с полем userId из составного ключа
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private UserEntity user;
 
     @Column(name = "joined_at", nullable = false, updatable = false, columnDefinition = "date")
     private LocalDateTime joinedAt;

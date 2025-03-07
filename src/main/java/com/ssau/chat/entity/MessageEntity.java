@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Message {
+public class MessageEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,11 +20,11 @@ public class Message {
 
     @ManyToOne
     @JoinColumn(name = "chat_id", nullable = false)
-    private Chat chat; // Чат, к которому относится сообщение
+    private ChatEntity chat; // Чат, к которому относится сообщение
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User sender; // Отправитель сообщения
+    private UserEntity sender; // Отправитель сообщения
 
     @Column(name = "content", nullable = false, length = 1000)
     private String content; // Текст сообщения

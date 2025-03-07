@@ -6,13 +6,13 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
-@Table(name = "users") // Название таблицы в БД
+@Table(name = "app_user") // Название таблицы в БД
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +29,7 @@ public class User {
     private LocalDateTime createdAt; // Дата регистрации
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ChatUser> chatUsers; // Список чатов, в которых состоит пользователь
+    private Set<ChatUserEntity> chatUser; // Список чатов, в которых состоит пользователь
 
     @PrePersist
     protected void onCreate() {
