@@ -7,8 +7,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "app_user") // Название таблицы в БД
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -19,8 +18,11 @@ public class UserEntity {
     @Column(name = "id")
     private Long id;
 
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
+
     @Column(name = "username", nullable = false, length = 50)
-    private String username; // Уникальное имя пользователя (максимум 50 символов)
+    private String username;
 
     @Column(name = "password", nullable = false)
     private String password; // Хешированный пароль

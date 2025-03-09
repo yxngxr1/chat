@@ -24,11 +24,15 @@ public class MessageService {
     private final MessageMapper messageMapper;
 
     public MessageDTO sendMessage(MessageDTO messageDTO) {
-        ChatEntity chatEntity = chatRepository.findById(messageDTO.getChatId())
-                .orElseThrow(() -> new EntityNotFoundException("Chat not found"));
+        ChatEntity chatEntity =
+                chatRepository
+                        .findById(messageDTO.getChatId())
+                        .orElseThrow(() -> new IllegalArgumentException("Chat id not found"));
 
-        UserEntity sender = userRepository.findById(messageDTO.getSenderId())
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        UserEntity sender =
+                userRepository
+                        .findById(messageDTO.getSenderId())
+                        .orElseThrow(() -> new IllegalArgumentException("User id not found"));
 
         MessageEntity messageEntity = messageMapper.toEntity(messageDTO, chatEntity, sender);
         MessageEntity savedMessage = messageRepository.save(messageEntity);

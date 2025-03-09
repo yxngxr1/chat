@@ -7,32 +7,37 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "chat_user") // Название таблицы в БД
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class ChatUserEntity {
 
     @EmbeddedId
-    private ChatUserId id; // Составной ключ (chat_id, user_id)
+    private ChatUserId id = new ChatUserId(); // Составной ключ
 
     @ManyToOne
-    @MapsId("chatId") // Связь с полем chatId из составного ключа
+    @MapsId("chatId") // Привязываем поле chatId из ChatUserId к сущности ChatEntity
     @JoinColumn(name = "chat_id", nullable = false)
     private ChatEntity chat;
 
     @ManyToOne
-    @MapsId("userId") // Связь с полем userId из составного ключа
+    @MapsId("userId") // Привязываем поле userId из ChatUserId к сущности UserEntity
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    @Column(name = "joined_at", nullable = false, updatable = false, columnDefinition = "date")
+    @Column(name = "joined_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     private LocalDateTime joinedAt;
 
     @PrePersist
     protected void onCreate() {
         this.joinedAt = LocalDateTime.now();
+    }
+
+    public ChatUserEntity(ChatEntity chat, UserEntity user) {
+        this.id = new ChatUserId(chat.getId(), user.getId());
+        this.chat = chat;
+        this.user = user;
     }
 }
 

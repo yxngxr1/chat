@@ -23,10 +23,10 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll() // Доступ к Swagger без авторизации
-                        .anyRequest().authenticated() // Все остальные запросы требуют авторизации
-                )
-                .formLogin(Customizer.withDefaults()) // Включаем стандартную форму логина
-                .httpBasic(Customizer.withDefaults()); // Включаем Basic Auth
+                        .anyRequest().permitAll() // Все остальные запросы требуют авторизации
+                );
+//                .formLogin(Customizer.withDefaults()) // Включаем стандартную форму логина
+//                .httpBasic(Customizer.withDefaults()); // Включаем Basic Auth
 
         return http.build();
     }

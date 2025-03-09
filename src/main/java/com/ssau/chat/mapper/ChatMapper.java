@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ChatMapper {
 
-    public ChatDTO toDto(ChatEntity chatEntity) {
+    public static ChatDTO toDto(ChatEntity chatEntity) {
         if (chatEntity == null) {
             return null;
         }
@@ -19,7 +19,7 @@ public class ChatMapper {
                 .build();
     }
 
-    public ChatEntity toEntity(ChatDTO chatDTO) {
+    public static ChatEntity toEntity(ChatDTO chatDTO) {
         if (chatDTO == null) {
             return null;
         }

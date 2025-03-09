@@ -10,15 +10,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/messages")
+@RequestMapping("/api/messages")
 @RequiredArgsConstructor
 public class MessageController {
     private final MessageService messageService;
 
     @PostMapping
-    public ResponseEntity<MessageDTO> sendMessage(@RequestBody MessageDTO messageDTO) {
-        MessageDTO savedMessage = messageService.sendMessage(messageDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedMessage);
+    public MessageDTO sendMessage(@RequestBody MessageDTO messageDTO) {
+        return messageService.sendMessage(messageDTO);
     }
 
     @GetMapping("/chat/{chatId}")

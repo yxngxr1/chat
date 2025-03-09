@@ -1,5 +1,6 @@
 package com.ssau.chat.entity;
 
+import com.ssau.chat.entity.enums.ChatType;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -7,11 +8,10 @@ import java.util.Set;
 
 @Entity
 @Table(name = "chat") // Название таблицы в БД
-@Getter
-@Setter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class ChatEntity {
 
     @Id
@@ -24,6 +24,10 @@ public class ChatEntity {
 
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "date")
     private LocalDateTime createdAt; // Дата создания чата
+
+    @Enumerated(EnumType.STRING) // Хранить enum как строку (имена)
+    @Column(name = "type", nullable = false)
+    private ChatType type;  // Добавлено поле для типа чата
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ChatUserEntity> chatUser; // Участники чата
