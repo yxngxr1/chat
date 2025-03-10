@@ -15,13 +15,20 @@ import java.util.List;
 public class MessageController {
     private final MessageService messageService;
 
-    @PostMapping
+    @PostMapping()
     public MessageDTO sendMessage(@RequestBody MessageDTO messageDTO) {
+        // TODO сделать dto по нормальному и вообще наверное убрать и сделать websocket
         return messageService.sendMessage(messageDTO);
     }
 
     @GetMapping("/chat/{chatId}")
     public List<MessageDTO> getMessagesByChat(@PathVariable Long chatId) {
         return messageService.getMessagesByChat(chatId);
+    }
+
+    @DeleteMapping("/chat/{chatId}/msg/{msgId}")
+    public String deleteMessage(@PathVariable Long chatId, @PathVariable Long msgId) {
+        messageService.deleteMessage(chatId, msgId);
+        return "Message deleted";
     }
 }

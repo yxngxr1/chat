@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class MessageMapper {
 
-    public MessageDTO toDto(MessageEntity messageEntity) {
+    public static MessageDTO toDto(MessageEntity messageEntity) {
         if (messageEntity == null) {
             return null;
         }
@@ -23,7 +23,7 @@ public class MessageMapper {
                 .build();
     }
 
-    public MessageEntity toEntity(MessageDTO messageDTO, ChatEntity chatEntity, UserEntity sender) {
+    public static MessageEntity toEntity(MessageDTO messageDTO, ChatEntity chatEntity, UserEntity sender) {
         if (messageDTO == null) {
             return null;
         }

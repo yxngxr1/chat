@@ -1,5 +1,6 @@
 package com.ssau.chat.controller;
 
+import com.ssau.chat.dto.ChatDTO;
 import com.ssau.chat.dto.RegistrationRequest;
 import com.ssau.chat.dto.UserDTO;
 import com.ssau.chat.service.UserService;
@@ -25,6 +26,12 @@ public class UserController {
         return userService.createUser(registrationRequest);
     }
 
+    @DeleteMapping("/{id}")
+    public String deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return "User deleted successfully";
+    }
+
     @GetMapping("/{id}")
     public UserDTO getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
@@ -33,5 +40,10 @@ public class UserController {
     @GetMapping
     public List<UserDTO> getAllUsers() {
         return userService.getAllUsers();
+    }
+
+    @GetMapping("/{id}/chats")
+    public List<ChatDTO> getAllChatsById(@PathVariable Long id) {
+        return userService.getAllChatsById(id);
     }
 }

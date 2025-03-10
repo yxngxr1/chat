@@ -34,15 +34,37 @@ public class MessageService {
                         .findById(messageDTO.getSenderId())
                         .orElseThrow(() -> new IllegalArgumentException("User id not found"));
 
-        MessageEntity messageEntity = messageMapper.toEntity(messageDTO, chatEntity, sender);
+        // TODO проверка пользователь находится в чате
+
+        MessageEntity messageEntity = MessageMapper.toEntity(messageDTO, chatEntity, sender);
         MessageEntity savedMessage = messageRepository.save(messageEntity);
-        return messageMapper.toDto(savedMessage);
+        return MessageMapper.toDto(savedMessage);
     }
 
     public List<MessageDTO> getMessagesByChat(Long chatId) {
         return messageRepository.findByChat_Id(chatId).stream()
-                .map(messageMapper::toDto)
+                .map(MessageMapper::toDto)
                 .collect(Collectors.toList());
     }
+
+    public void deleteMessage(Long chatId, Long msgId) {
+        ChatEntity chatEntity =
+                chatRepository
+                        .findById(chatId)
+                        .orElseThrow(() -> new IllegalArgumentException("Chat id not found"));
+
+        MessageEntity message =
+                messageRepository
+                        .findById(msgId)
+                        .orElseThrow(() -> new IllegalArgumentException("Message id not found"));
+
+
+        // TODO сообщение может удалить юзер находящийся в этом чате
+
+        // TODO сообщение может удалить только владелец
+
+        messageRepository.delete(message);
+    }
+
 }
 

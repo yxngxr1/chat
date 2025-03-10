@@ -14,15 +14,15 @@ import java.time.LocalDateTime;
 public class ChatUserEntity {
 
     @EmbeddedId
-    private ChatUserId id = new ChatUserId(); // Составной ключ
+    private ChatUserId id;
 
     @ManyToOne
-    @MapsId("chatId") // Привязываем поле chatId из ChatUserId к сущности ChatEntity
+    @MapsId("chatId")
     @JoinColumn(name = "chat_id", nullable = false)
     private ChatEntity chat;
 
     @ManyToOne
-    @MapsId("userId") // Привязываем поле userId из ChatUserId к сущности UserEntity
+    @MapsId("userId")
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 

@@ -14,13 +14,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @Embeddable
 public class ChatUserId implements Serializable {
-
-    @Column(name = "chat_id")
-    @JoinColumn(name = "chat_id", nullable = false)
     private Long chatId;
-
-    @Column(name = "user_id")
-    @JoinColumn(name = "user_id", nullable = false)
     private Long userId;
 
     @Override

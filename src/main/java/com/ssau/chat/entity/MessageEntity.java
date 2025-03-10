@@ -18,11 +18,11 @@ public class MessageEntity {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "chat_id", nullable = false)
     private ChatEntity chat; // Чат, к которому относится сообщение
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity sender; // Отправитель сообщения
 

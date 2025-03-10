@@ -3,18 +3,14 @@ package com.ssau.chat.controller;
 import com.ssau.chat.dto.ChatDTO;
 import com.ssau.chat.dto.ChatUserJoinResponse;
 import com.ssau.chat.dto.CreateChatRequest;
+import com.ssau.chat.dto.UserDTO;
 import com.ssau.chat.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/chats")
@@ -25,6 +21,12 @@ public class ChatController {
     @PostMapping
     public ChatDTO createChat(@RequestBody @Valid CreateChatRequest createChatRequest) {
         return chatService.createChatWithUsers(createChatRequest);
+    }
+
+    @DeleteMapping("/{id}")
+    public String deleteChat(@PathVariable Long id) {
+        chatService.deleteChat(id);
+        return "Chat deleted";
     }
 
     @Operation(summary = "Получить информацию о чате")
@@ -39,14 +41,21 @@ public class ChatController {
         return chatService.getAllChats();
     }
 
+    @GetMapping("/{id}/users")
+    public List<UserDTO> getUsersByChatId(@PathVariable Long id) {
+        return chatService.getAllUsersByChatId(id);
+    }
+
     @PostMapping("/{chatId}/join/{userId}")
     public ChatUserJoinResponse joinUserInChat(@PathVariable Long chatId, @PathVariable Long userId) {
         return chatService.addUserToChat(chatId, userId);
     }
 
-//    @PostMapping("/{chatId}/leave/{userId}")
-//    public  leaveUserFromChat(@PathVariable Long chatId, @PathVariable Long userId) {
-//        chatService.addUserToChat(chatId, userId);
-//        return ResponseEntity.ok("User added to chat successfully");
-//    }
+    @DeleteMapping("/{chatId}/leave/{userId}")
+    public String leaveUserFromChat(@PathVariable Long chatId, @PathVariable Long userId) {
+        chatService.leaveUserFromChat(chatId, userId);
+        return "User leave from chat successfully";
+    }
+
+
 }
