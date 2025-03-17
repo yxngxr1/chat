@@ -11,6 +11,7 @@ import com.ssau.chat.repository.ChatRepository;
 import com.ssau.chat.repository.ChatUserRepository;
 import com.ssau.chat.repository.MessageRepository;
 import com.ssau.chat.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -207,7 +208,10 @@ public class ChatService {
         chatUserRepository.delete(existingUser);
     }
 
+    @Transactional
     public void deleteChat(Long chatId) {
+        // TODO как то не круто
+
         ChatEntity chat =
                 chatRepository
                         .findById(chatId)
@@ -235,7 +239,6 @@ public class ChatService {
         c = messageRepository.deleteAllByChatId(chatId);
         log.debug("messages deleted: {}", c);
 
-        // TODO схуято со второго раза только работает
         chatRepository.deleteById(chatId);
 
     }

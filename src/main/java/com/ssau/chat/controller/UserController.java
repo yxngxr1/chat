@@ -3,6 +3,7 @@ package com.ssau.chat.controller;
 import com.ssau.chat.dto.ChatDTO;
 import com.ssau.chat.dto.RegistrationRequest;
 import com.ssau.chat.dto.UserDTO;
+import com.ssau.chat.service.AuthService;
 import com.ssau.chat.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +22,12 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private AuthService authService;
+
     @PostMapping
     public UserDTO createUser(@RequestBody @Valid RegistrationRequest registrationRequest) {
-        return userService.createUser(registrationRequest);
+        return authService.createUser(registrationRequest);
     }
 
     @DeleteMapping("/{id}")

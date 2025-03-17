@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "chat_user") // Название таблицы в БД
@@ -16,12 +17,12 @@ public class ChatUserEntity {
     @EmbeddedId
     private ChatUserId id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @MapsId("chatId")
     @JoinColumn(name = "chat_id", nullable = false)
     private ChatEntity chat;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @MapsId("userId")
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
@@ -39,6 +40,19 @@ public class ChatUserEntity {
         this.chat = chat;
         this.user = user;
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        ChatUserEntity other = (ChatUserEntity) obj;
+        return Objects.equals(id, other.id);
+    }
+
 }
 
 

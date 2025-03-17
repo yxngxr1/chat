@@ -1,0 +1,38 @@
+logging:
+  level:
+    com:
+      ssau:
+        chat: trace
+    org:
+      hibernate:
+        SQL: debug
+    root: error
+
+spring:
+  application:
+    name: chat
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    password: ${DB_PASSWORD}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+  jpa:
+    database: postgresql
+    hibernate:
+      ddl-auto: update
+
+security:
+  jwt:
+    access_token_expiration: 3600000
+    refresh_token_expiration: 604800000
+
+secure:
+  jwt:
+    secret_key: mySuperSecretKey123!@#$%^&*()dg5gGEFDg5e
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+

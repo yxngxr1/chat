@@ -12,6 +12,9 @@ import com.ssau.chat.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,33 +25,12 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class UserService {
+public class UserService implements UserDetailsService {
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
     @Autowired
-    private ChatUserRepository chatUserRepository;
-
-    public UserDTO createUser(RegistrationRequest registrationRequest) {
-
-        if (userRepository.existsByEmail(registrationRequest.getEmail())) {
-            throw new IllegalArgumentException("Email is already taken");
-        }
-
-        UserEntity userEntity = UserEntity.builder()
-                .username(registrationRequest.getUsername())
-                .email(registrationRequest.getEmail())
-                .password(passwordEncoder.encode(registrationRequest.getPassword()))
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        UserEntity savedUser = userRepository.save(userEntity);
-
-        return UserMapper.toDto(savedUser);
-    }
+    private final ChatUserRepository chatUserRepository;
 
     public void deleteUser(Long userId) {
         if (!userRepository.existsById(userId)) {
@@ -77,6 +59,13 @@ public class UserService {
                 .findAllChatsByUserId(id).stream()
                 .map(ChatMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) {
+        return userRepository
+                .findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Пользователь с именем " + username + " не найден"));
     }
 }
 
