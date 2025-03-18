@@ -43,7 +43,8 @@ public class SecurityConfig {
                     .requestMatchers(
                             "/swagger-ui/**",
                             "/v3/api-docs/**",
-                            "/api/auth/login"
+                            "/api/auth/login",
+                            "/api/users"
                     ).permitAll() // Доступ к Swagger без авторизации
                     .anyRequest().authenticated() // Все остальные запросы требуют авторизации
 

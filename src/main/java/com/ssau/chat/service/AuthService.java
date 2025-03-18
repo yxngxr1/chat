@@ -58,14 +58,17 @@ public class AuthService {
     }
 
     public JwtAuthenticationResponse authenticate(LoginRequest loginRequest) {
+
+        UserEntity user = userRepository
+                .findByUsername(loginRequest.getUsername())
+                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsername(),
                         loginRequest.getPassword()
                 )
         );
-
-        UserEntity user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow();
 
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);

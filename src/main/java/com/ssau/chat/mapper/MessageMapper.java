@@ -33,7 +33,6 @@ public class MessageMapper {
                 .chat(chatEntity)
                 .sender(sender)
                 .content(messageDTO.getContent())
-                .sentAt(messageDTO.getSentAt())
                 .build();
     }
 }

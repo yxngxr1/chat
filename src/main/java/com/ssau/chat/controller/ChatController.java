@@ -1,17 +1,19 @@
 package com.ssau.chat.controller;
 
-import com.ssau.chat.dto.ChatDTO;
-import com.ssau.chat.dto.ChatUserJoinResponse;
-import com.ssau.chat.dto.CreateChatRequest;
-import com.ssau.chat.dto.UserDTO;
+import com.ssau.chat.dto.*;
+import com.ssau.chat.entity.UserEntity;
 import com.ssau.chat.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/chats")
 @RequiredArgsConstructor
@@ -19,14 +21,25 @@ public class ChatController {
     private final ChatService chatService;
 
     @PostMapping
-    public ChatDTO createChat(@RequestBody @Valid CreateChatRequest createChatRequest) {
-        return chatService.createChatWithUsers(createChatRequest);
+    public ChatDTO createChat(
+            @RequestBody @Valid CreateChatRequest createChatRequest,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        log.debug(createChatRequest.toString());
+        return chatService.createChatWithUsers(createChatRequest, userDetails);
+    }
+
+    @PutMapping("/{id}")
+    public ChatDTO updateChat(
+            @PathVariable Long id,
+            @RequestBody @Valid UpdateChatRequest updateChatRequest,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        log.debug("Updating chat with id: {}", id);
+        return chatService.updateChat(id, updateChatRequest, userDetails);
     }
 
     @DeleteMapping("/{id}")
-    public String deleteChat(@PathVariable Long id) {
+    public void deleteChat(@PathVariable Long id) {
         chatService.deleteChat(id);
-        return "Chat deleted";
     }
 
     @Operation(summary = "Получить информацию о чате")
@@ -36,9 +49,15 @@ public class ChatController {
     }
 
     @Operation(summary = "Получить список чатов", description = "Возвращает все чаты текущего пользователя")
-    @GetMapping
+    @GetMapping("/all")
     public List<ChatDTO> getAllChats() {
         return chatService.getAllChats();
+    }
+
+    @GetMapping
+    public List<ChatDTO> getAllChatsByUser(
+            @AuthenticationPrincipal UserEntity user) {
+        return chatService.getAllChatsByUser(user);
     }
 
     @GetMapping("/{id}/users")
@@ -52,10 +71,7 @@ public class ChatController {
     }
 
     @DeleteMapping("/{chatId}/leave/{userId}")
-    public String leaveUserFromChat(@PathVariable Long chatId, @PathVariable Long userId) {
+    public void leaveUserFromChat(@PathVariable Long chatId, @PathVariable Long userId) {
         chatService.leaveUserFromChat(chatId, userId);
-        return "User leave from chat successfully";
     }
-
-
 }

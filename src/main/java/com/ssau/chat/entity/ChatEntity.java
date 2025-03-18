@@ -24,6 +24,9 @@ public class ChatEntity {
     @Column(name = "name", nullable = false, length = 100)
     private String name; // Название чата
 
+    @Column(name = "description", length = 1000)
+    private String description;
+
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "date")
     private LocalDateTime createdAt; // Дата создания чата
 

@@ -15,6 +15,7 @@ public class ChatMapper {
         return ChatDTO.builder()
                 .id(chatEntity.getId())
                 .name(chatEntity.getName())
+                .description(chatEntity.getDescription())
                 .createdAt(chatEntity.getCreatedAt())
                 .build();
     }
@@ -27,6 +28,7 @@ public class ChatMapper {
         return ChatEntity.builder()
                 .id(chatDTO.getId())
                 .name(chatDTO.getName())
+                .description(chatDTO.getDescription())
                 .createdAt(chatDTO.getCreatedAt())
                 .build();
     }

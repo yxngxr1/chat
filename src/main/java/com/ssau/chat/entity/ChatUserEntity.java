@@ -17,12 +17,12 @@ public class ChatUserEntity {
     @EmbeddedId
     private ChatUserId id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @MapsId("chatId")
     @JoinColumn(name = "chat_id", nullable = false)
     private ChatEntity chat;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @MapsId("userId")
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;

@@ -42,6 +42,7 @@ public class JwtService {
 
     private String generateToken(UserEntity user, long tokenExpiration) {
         Claims claims = Jwts.claims().setSubject(user.getUsername());
+        claims.put("id", user.getId());
         claims.put("roles", user.getAuthorities());
         claims.put("type", "access");
 

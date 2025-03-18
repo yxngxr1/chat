@@ -47,4 +47,7 @@ public interface ChatUserRepository extends JpaRepository<ChatUserEntity, ChatUs
     int deleteAllByChatId(Long chatId);
 
 //    void deleteAllByUserId(Long userId);
+
+    List<ChatUserEntity> findByChatId(Long chatId);
+
 }

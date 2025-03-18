@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -66,6 +67,13 @@ public class UserService implements UserDetailsService {
         return userRepository
                 .findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Пользователь с именем " + username + " не найден"));
+    }
+
+    public List<UserDTO> findUsersByIds(Set<Long> ids) {
+        return userRepository
+                .findUsernamesByIds(ids).stream()
+                .map(UserMapper::toDto)
+                .collect(Collectors.toList());
     }
 }
 

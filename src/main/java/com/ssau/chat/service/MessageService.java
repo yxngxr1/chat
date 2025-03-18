@@ -1,6 +1,7 @@
 package com.ssau.chat.service;
 
 import com.ssau.chat.dto.MessageDTO;
+import com.ssau.chat.dto.UpdateMessageRequest;
 import com.ssau.chat.entity.ChatEntity;
 import com.ssau.chat.entity.MessageEntity;
 import com.ssau.chat.entity.UserEntity;
@@ -10,6 +11,9 @@ import com.ssau.chat.repository.MessageRepository;
 import com.ssau.chat.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,10 +33,17 @@ public class MessageService {
                         .findById(messageDTO.getChatId())
                         .orElseThrow(() -> new IllegalArgumentException("Chat id not found"));
 
-        UserEntity sender =
-                userRepository
-                        .findById(messageDTO.getSenderId())
-                        .orElseThrow(() -> new IllegalArgumentException("User id not found"));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal() instanceof String) {
+            throw new SecurityException("User not authenticated");
+        }
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String username = userDetails.getUsername();
+
+        UserEntity sender = userRepository
+                .findByUsername(username) // Предполагается метод поиска по username
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         // TODO проверка пользователь находится в чате
 
@@ -66,5 +77,24 @@ public class MessageService {
         messageRepository.delete(message);
     }
 
+    public MessageDTO updateMessage(Long chatId, Long msgId, UpdateMessageRequest updateMessageRequest, UserDetails userDetails) {
+        ChatEntity chat = chatRepository.findById(chatId)
+                .orElseThrow(() -> new IllegalArgumentException("Chat not found with id: " + chatId));
+
+        MessageEntity message = messageRepository.findById(msgId)
+                .orElseThrow(() -> new IllegalArgumentException("Message not found with id: " + msgId));
+
+        UserEntity creator = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("Creator not found"));
+
+        if (creator.getId() != message.getSender().getId()) {
+            throw new SecurityException("Only the sender can change the message");
+        }
+
+        message.setContent(updateMessageRequest.getContent());
+
+        MessageEntity updatedMessage = messageRepository.save(message);
+        return MessageMapper.toDto(updatedMessage);
+    }
 }
 
