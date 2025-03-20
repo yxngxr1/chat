@@ -1,6 +1,6 @@
 package com.ssau.chat.mapper;
 
-import com.ssau.chat.dto.MessageDTO;
+import com.ssau.chat.dto.Message.MessageDTO;
 import com.ssau.chat.entity.ChatEntity;
 import com.ssau.chat.entity.MessageEntity;
 import com.ssau.chat.entity.UserEntity;
@@ -31,8 +31,8 @@ public class MessageMapper {
         return MessageEntity.builder()
                 .id(messageDTO.getId())
                 .chat(chatEntity)
-                .sender(sender)
                 .content(messageDTO.getContent())
+                .sender(sender)
                 .build();
     }
 }

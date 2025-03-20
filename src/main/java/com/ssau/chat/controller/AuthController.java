@@ -1,7 +1,7 @@
 package com.ssau.chat.controller;
 
-import com.ssau.chat.dto.JwtAuthenticationResponse;
-import com.ssau.chat.dto.LoginRequest;
+import com.ssau.chat.dto.Auth.LoginResponse;
+import com.ssau.chat.dto.Auth.LoginRequest;
 import com.ssau.chat.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,12 +24,14 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/login")
-    public JwtAuthenticationResponse login(@Valid @RequestBody LoginRequest loginRequest) {
+    public LoginResponse login(
+            @Valid @RequestBody LoginRequest loginRequest
+    ) {
         return authService.authenticate(loginRequest);
     }
 
     @PostMapping("/refresh_token")
-    public JwtAuthenticationResponse refreshToken(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    public LoginResponse refreshToken(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         return authService.refreshToken(request, response);
     }
 }

@@ -1,7 +1,8 @@
 package com.ssau.chat.service;
 
-import com.ssau.chat.dto.MessageDTO;
-import com.ssau.chat.dto.UpdateMessageRequest;
+import com.ssau.chat.dto.Message.MessageCreateRequest;
+import com.ssau.chat.dto.Message.MessageDTO;
+import com.ssau.chat.dto.Message.MessageUpdateRequest;
 import com.ssau.chat.entity.ChatEntity;
 import com.ssau.chat.entity.MessageEntity;
 import com.ssau.chat.entity.UserEntity;
@@ -9,7 +10,6 @@ import com.ssau.chat.mapper.MessageMapper;
 import com.ssau.chat.repository.ChatRepository;
 import com.ssau.chat.repository.MessageRepository;
 import com.ssau.chat.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,10 +27,10 @@ public class MessageService {
     private final UserRepository userRepository;
     private final MessageMapper messageMapper;
 
-    public MessageDTO sendMessage(MessageDTO messageDTO) {
+    public MessageDTO sendMessage(MessageCreateRequest messageCreateRequest) {
         ChatEntity chatEntity =
                 chatRepository
-                        .findById(messageDTO.getChatId())
+                        .findById(messageCreateRequest.getChatId())
                         .orElseThrow(() -> new IllegalArgumentException("Chat id not found"));
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -47,6 +47,10 @@ public class MessageService {
 
         // TODO проверка пользователь находится в чате
 
+        MessageDTO messageDTO = MessageDTO.builder()
+                .chatId(messageCreateRequest.getChatId())
+                .content(messageCreateRequest.getContent())
+                .build();
         MessageEntity messageEntity = MessageMapper.toEntity(messageDTO, chatEntity, sender);
         MessageEntity savedMessage = messageRepository.save(messageEntity);
         return MessageMapper.toDto(savedMessage);
@@ -72,12 +76,12 @@ public class MessageService {
 
         // TODO сообщение может удалить юзер находящийся в этом чате
 
-        // TODO сообщение может удалить только владелец
+        // TODO сообщение может удалить только владелец сообщения
 
         messageRepository.delete(message);
     }
 
-    public MessageDTO updateMessage(Long chatId, Long msgId, UpdateMessageRequest updateMessageRequest, UserDetails userDetails) {
+    public MessageDTO updateMessage(Long chatId, Long msgId, MessageUpdateRequest messageUpdateRequest, UserDetails userDetails) {
         ChatEntity chat = chatRepository.findById(chatId)
                 .orElseThrow(() -> new IllegalArgumentException("Chat not found with id: " + chatId));
 
@@ -91,7 +95,7 @@ public class MessageService {
             throw new SecurityException("Only the sender can change the message");
         }
 
-        message.setContent(updateMessageRequest.getContent());
+        message.setContent(messageUpdateRequest.getContent());
 
         MessageEntity updatedMessage = messageRepository.save(message);
         return MessageMapper.toDto(updatedMessage);

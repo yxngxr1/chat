@@ -1,17 +1,17 @@
-package com.ssau.chat.dto;
+package com.ssau.chat.dto.Chat;
 
 import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserDTO {
+public class ChatDTO {
     private Long id;
-    private String username;
-    private String email;
+    private String name;
+    private String description;
     private LocalDateTime createdAt;
 }
-

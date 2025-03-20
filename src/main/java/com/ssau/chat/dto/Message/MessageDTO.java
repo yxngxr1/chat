@@ -1,4 +1,4 @@
-package com.ssau.chat.dto;
+package com.ssau.chat.dto.Message;
 
 import lombok.*;
 

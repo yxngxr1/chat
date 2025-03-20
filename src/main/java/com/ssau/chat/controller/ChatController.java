@@ -1,6 +1,10 @@
 package com.ssau.chat.controller;
 
-import com.ssau.chat.dto.*;
+import com.ssau.chat.dto.Chat.ChatDTO;
+import com.ssau.chat.dto.Chat.ChatCreateRequest;
+import com.ssau.chat.dto.Chat.ChatUpdateRequest;
+import com.ssau.chat.dto.ChatUser.ChatUserCreateResponse;
+import com.ssau.chat.dto.User.UserDTO;
 import com.ssau.chat.entity.UserEntity;
 import com.ssau.chat.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,19 +26,19 @@ public class ChatController {
 
     @PostMapping
     public ChatDTO createChat(
-            @RequestBody @Valid CreateChatRequest createChatRequest,
+            @RequestBody @Valid ChatCreateRequest chatCreateRequest,
             @AuthenticationPrincipal UserDetails userDetails) {
-        log.debug(createChatRequest.toString());
-        return chatService.createChatWithUsers(createChatRequest, userDetails);
+        log.debug(chatCreateRequest.toString());
+        return chatService.createChatWithUsers(chatCreateRequest, userDetails);
     }
 
     @PutMapping("/{id}")
     public ChatDTO updateChat(
             @PathVariable Long id,
-            @RequestBody @Valid UpdateChatRequest updateChatRequest,
+            @RequestBody @Valid ChatUpdateRequest chatUpdateRequest,
             @AuthenticationPrincipal UserDetails userDetails) {
         log.debug("Updating chat with id: {}", id);
-        return chatService.updateChat(id, updateChatRequest, userDetails);
+        return chatService.updateChat(id, chatUpdateRequest, userDetails);
     }
 
     @DeleteMapping("/{id}")
@@ -66,7 +70,7 @@ public class ChatController {
     }
 
     @PostMapping("/{chatId}/join/{userId}")
-    public ChatUserJoinResponse joinUserInChat(@PathVariable Long chatId, @PathVariable Long userId) {
+    public ChatUserCreateResponse joinUserInChat(@PathVariable Long chatId, @PathVariable Long userId) {
         return chatService.addUserToChat(chatId, userId);
     }
 

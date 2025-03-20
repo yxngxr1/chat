@@ -1,4 +1,4 @@
-package com.ssau.chat.dto;
+package com.ssau.chat.dto.Auth;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

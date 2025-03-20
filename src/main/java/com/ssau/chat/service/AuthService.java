@@ -1,9 +1,9 @@
 package com.ssau.chat.service;
 
-import com.ssau.chat.dto.JwtAuthenticationResponse;
-import com.ssau.chat.dto.LoginRequest;
-import com.ssau.chat.dto.RegistrationRequest;
-import com.ssau.chat.dto.UserDTO;
+import com.ssau.chat.dto.Auth.LoginResponse;
+import com.ssau.chat.dto.Auth.LoginRequest;
+import com.ssau.chat.dto.User.UserCreateRequest;
+import com.ssau.chat.dto.User.UserDTO;
 import com.ssau.chat.entity.UserEntity;
 import com.ssau.chat.entity.enums.Role;
 import com.ssau.chat.mapper.UserMapper;
@@ -32,32 +32,9 @@ public class AuthService {
     private UserRepository userRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
     private AuthenticationManager authenticationManager;
 
-
-    public UserDTO createUser(RegistrationRequest registrationRequest) {
-
-        if (userRepository.existsByEmail(registrationRequest.getEmail())) {
-            throw new IllegalArgumentException("Email is already taken");
-        }
-
-        UserEntity userEntity = UserEntity.builder()
-                .username(registrationRequest.getUsername())
-                .email(registrationRequest.getEmail())
-                .role(Role.ROLE_USER)
-                .password(passwordEncoder.encode(registrationRequest.getPassword()))
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        UserEntity savedUser = userRepository.save(userEntity);
-
-        return UserMapper.toDto(savedUser);
-    }
-
-    public JwtAuthenticationResponse authenticate(LoginRequest loginRequest) {
+    public LoginResponse authenticate(LoginRequest loginRequest) {
 
         UserEntity user = userRepository
                 .findByUsername(loginRequest.getUsername())
@@ -73,10 +50,10 @@ public class AuthService {
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        return new JwtAuthenticationResponse(accessToken, refreshToken);
+        return new LoginResponse(accessToken, refreshToken);
     }
 
-    public JwtAuthenticationResponse refreshToken(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    public LoginResponse refreshToken(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             throw new AuthenticationException("No JWT token");
@@ -88,7 +65,7 @@ public class AuthService {
         if (jwtService.validate(token)) {
             String accessToken = jwtService.generateAccessToken(user);
             String refreshToken = jwtService.generateRefreshToken(user);
-            return new JwtAuthenticationResponse(accessToken, refreshToken);
+            return new LoginResponse(accessToken, refreshToken);
         }
         return null;
     }

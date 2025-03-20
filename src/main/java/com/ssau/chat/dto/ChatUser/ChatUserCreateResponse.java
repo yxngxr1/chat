@@ -1,4 +1,4 @@
-package com.ssau.chat.dto;
+package com.ssau.chat.dto.ChatUser;
 
 import lombok.*;
 
@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ChatUserJoinResponse {
+public class ChatUserCreateResponse {
     private Long chatId;
     private Long userId;
     private LocalDateTime joinedAt;

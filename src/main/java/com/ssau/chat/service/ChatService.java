@@ -1,6 +1,11 @@
 package com.ssau.chat.service;
 
-import com.ssau.chat.dto.*;
+import com.ssau.chat.dto.Chat.ChatDTO;
+import com.ssau.chat.dto.Chat.ChatCreateRequest;
+import com.ssau.chat.dto.Chat.ChatUpdateRequest;
+import com.ssau.chat.dto.ChatUser.ChatUserCreateResponse;
+import com.ssau.chat.dto.Message.MessageDTO;
+import com.ssau.chat.dto.User.UserDTO;
 import com.ssau.chat.entity.ChatEntity;
 import com.ssau.chat.entity.ChatUserEntity;
 import com.ssau.chat.entity.UserEntity;
@@ -13,16 +18,12 @@ import com.ssau.chat.repository.MessageRepository;
 import com.ssau.chat.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -46,16 +47,16 @@ public class ChatService {
     @Autowired
     private MessageRepository messageRepository;
 
-    public ChatDTO createChatWithUsers(CreateChatRequest createChatRequest, UserDetails userDetails) {
+    public ChatDTO createChatWithUsers(ChatCreateRequest chatCreateRequest, UserDetails userDetails) {
         String username = userDetails.getUsername();
         UserEntity creator = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Creator not found"));
 
         // Добавляем пользователей в чат в зависимости от типа
-        ChatDTO chatDTO = switch (createChatRequest.getChatType()) {
-            case PRIVATE -> createPrivateChat(createChatRequest, creator);
-            case GROUP -> createGroupChat(createChatRequest, creator);
-            case SELF -> createSelfChat(createChatRequest, creator);
+        ChatDTO chatDTO = switch (chatCreateRequest.getChatType()) {
+            case PRIVATE -> createPrivateChat(chatCreateRequest, creator);
+            case GROUP -> createGroupChat(chatCreateRequest, creator);
+            case SELF -> createSelfChat(chatCreateRequest, creator);
         };
 
         return chatDTO;
@@ -76,9 +77,9 @@ public class ChatService {
                 .collect(Collectors.toList());
     }
 
-    private ChatDTO createPrivateChat(CreateChatRequest createChatRequest, UserEntity creator) {
+    private ChatDTO createPrivateChat(ChatCreateRequest chatCreateRequest, UserEntity creator) {
         Long creatorId = creator.getId();
-        List<Long> userIds = createChatRequest.getUserIds();
+        List<Long> userIds = chatCreateRequest.getUserIds();
 
         // Проверяем, что у нас ровно один user в списке (кроме создателя)
         if (userIds == null || userIds.size() != 1) {
@@ -99,36 +100,36 @@ public class ChatService {
             throw new IllegalArgumentException("Private chat already exists");
         }
         Set<Long> userIdsSet = new HashSet<>(Set.of(creatorId, secondUserId));
-        ChatDTO chatDTO = createChat(createChatRequest, userIdsSet);
+        ChatDTO chatDTO = createChat(chatCreateRequest, userIdsSet);
         addUsersToChat(chatDTO.getId(), userIdsSet);
 
         return chatDTO;
     }
 
-    private ChatDTO createGroupChat(CreateChatRequest createChatRequest, UserEntity creator) {
-        Set<Long> userIds = new HashSet<>(createChatRequest.getUserIds());
+    private ChatDTO createGroupChat(ChatCreateRequest chatCreateRequest, UserEntity creator) {
+        Set<Long> userIds = new HashSet<>(chatCreateRequest.getUserIds());
         userIds.add(creator.getId());
 
-        ChatDTO chatDTO = createChat(createChatRequest, userIds);
+        ChatDTO chatDTO = createChat(chatCreateRequest, userIds);
         addUsersToChat(chatDTO.getId(), userIds);
 
         return chatDTO;
     }
 
-    private ChatDTO createSelfChat(CreateChatRequest createChatRequest, UserEntity creator) {
+    private ChatDTO createSelfChat(ChatCreateRequest chatCreateRequest, UserEntity creator) {
         Long creatorId = creator.getId();
 
         if (getSelfChat(creatorId).isPresent()) {
             throw new IllegalArgumentException("Self chat already exists");
         }
-        ChatDTO chatDTO = createChat(createChatRequest, new HashSet<>(Set.of(creatorId)));
+        ChatDTO chatDTO = createChat(chatCreateRequest, new HashSet<>(Set.of(creatorId)));
 
         addUserToChat(chatDTO.getId(), creatorId);
 
         return chatDTO;
     }
 
-    private ChatDTO createChat(CreateChatRequest createChatRequest, Set<Long> userIds) {
+    private ChatDTO createChat(ChatCreateRequest chatCreateRequest, Set<Long> userIds) {
 
         List<UserDTO> users = userService.findUsersByIds(userIds);
 
@@ -137,16 +138,16 @@ public class ChatService {
                 .collect(Collectors.joining(" "));
 
         ChatEntity chat = ChatEntity.builder()
-                .name(chatName) //todo change to real name for group chats
+                .name(chatName)
                 .createdAt(LocalDateTime.now())
-                .type(createChatRequest.getChatType())
+                .type(chatCreateRequest.getChatType())
                 .build();
 
         ChatEntity savedChat = chatRepository.save(chat);
         return ChatMapper.toDto(savedChat);
     }
 
-    public ChatUserJoinResponse addUserToChat(Long chatId, Long userId) {
+    public ChatUserCreateResponse addUserToChat(Long chatId, Long userId) {
         ChatEntity chat =
                 chatRepository
                         .findById(chatId)
@@ -171,13 +172,13 @@ public class ChatService {
 
         log.info("Adding user {} to chat {}", userId, chatId);
 
-        ChatUserJoinResponse chatUserJoinResponse = ChatUserJoinResponse.builder()
+        ChatUserCreateResponse chatUserCreateResponse = ChatUserCreateResponse.builder()
                 .chatId(savedChatUser.getChat().getId())
                 .userId(savedChatUser.getUser().getId())
                 .joinedAt(savedChatUser.getJoinedAt())
                 .build();
 
-        return chatUserJoinResponse;
+        return chatUserCreateResponse;
     }
 
     public void addUsersToChat(Long chatId, Set<Long> userIds) {
@@ -289,14 +290,14 @@ public class ChatService {
     }
 
     @Transactional
-    public ChatDTO updateChat(Long id, UpdateChatRequest updateChatRequest, UserDetails userDetails) {
+    public ChatDTO updateChat(Long id, ChatUpdateRequest chatUpdateRequest, UserDetails userDetails) {
         ChatEntity chat = chatRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Chat not found with id: " + id));
 
         // TODO Проверка, является ли пользователь владельцем чата (если есть такое требование)
-        log.debug(updateChatRequest.toString());
-        chat.setName(updateChatRequest.getName());
-        chat.setDescription(updateChatRequest.getDescription());
+        log.debug(chatUpdateRequest.toString());
+        chat.setName(chatUpdateRequest.getName());
+        chat.setDescription(chatUpdateRequest.getDescription());
 
         ChatEntity updatedChat = chatRepository.save(chat);
         return ChatMapper.toDto(updatedChat);

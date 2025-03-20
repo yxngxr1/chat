@@ -1,6 +1,6 @@
 package com.ssau.chat.mapper;
 
-import com.ssau.chat.dto.ChatDTO;
+import com.ssau.chat.dto.Chat.ChatDTO;
 import com.ssau.chat.entity.ChatEntity;
 import org.springframework.stereotype.Component;
 
