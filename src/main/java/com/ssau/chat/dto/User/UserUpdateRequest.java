@@ -2,11 +2,11 @@ package com.ssau.chat.dto.User;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
+@Schema(description = "Запрос на обновление данных пользователя, включая имя, email и пароль")
 public class UserUpdateRequest {
     @Schema(description = "Имя пользователя", example = "Jon")
     @Size(min = 3, max = 20, message = "Username must be 3-20 characters")

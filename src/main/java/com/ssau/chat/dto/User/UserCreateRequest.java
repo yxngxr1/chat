@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
+@Schema(description = "Запрос на создание нового чата, включающий список пользователей и тип чата")
 public class UserCreateRequest {
     @Schema(description = "Имя пользователя", example = "Jon")
     @NotBlank(message = "Username is required")
