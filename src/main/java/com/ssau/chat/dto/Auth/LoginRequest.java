@@ -8,6 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@Schema(description = "Запрос на получение токена")
 public class LoginRequest {
     @Schema(description = "Имя пользователя", example = "Jon")
     @NotBlank(message = "Username is required")

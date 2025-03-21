@@ -26,6 +26,10 @@ public class ChatDTO {
     private String description;
 
     @NotBlank
+    @Schema(description = "Создатель чата", example = "1")
+    private Long creatorId;
+
+    @NotBlank
     @Schema(description = "Дата и время создания чата", example = "2025-03-20T14:30:00")
     private LocalDateTime createdAt;
 }

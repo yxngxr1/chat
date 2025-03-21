@@ -97,7 +97,7 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) {
         return userRepository
                 .findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Пользователь с именем " + username + " не найден"));
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь с именем " + username + " не найден"));
     }
 
     public List<UserDTO> findUsersByIds(Set<Long> ids) {

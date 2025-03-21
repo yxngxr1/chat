@@ -28,8 +28,8 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    @Operation(summary = "Вход пользователя", description = "Аутентифицирует пользователя и возвращает токен доступа")
-    @PostMapping("/login")
+    @Operation(summary = "Получение токена", description = "Аутентифицирует пользователя и возвращает токен доступа")
+    @PostMapping("/access_token")
     public LoginResponse login(
             @Valid @RequestBody LoginRequest loginRequest
     ) {

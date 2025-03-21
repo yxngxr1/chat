@@ -6,6 +6,7 @@ import com.ssau.chat.dto.User.UserCreateRequest;
 import com.ssau.chat.dto.Chat.ChatUpdateRequest;
 import com.ssau.chat.dto.User.UserDTO;
 import com.ssau.chat.dto.User.UserUpdateRequest;
+import com.ssau.chat.entity.UserEntity;
 import com.ssau.chat.service.AuthService;
 import com.ssau.chat.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,11 +14,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
@@ -55,6 +58,13 @@ public class UserController {
         return userService.getUserById(id);
     }
 
+    @Operation(summary = "Получение информации о себе", description = "Возвращает информацию о пользователе по его токену")
+    @GetMapping("/me")
+    public UserDTO getUserById(
+            @AuthenticationPrincipal UserEntity userDetails) {
+        return userService.getUserById(userDetails.getId());
+    }
+
     @Operation(summary = "Получение всех пользователей", description = "Возвращает список всех пользователей")
     @GetMapping
     public List<UserDTO> getAllUsers() {
@@ -65,5 +75,14 @@ public class UserController {
     @GetMapping("/{id}/chats")
     public List<ChatDTO> getAllChatsById(@PathVariable Long id) {
         return userService.getAllChatsById(id);
+    }
+
+    @GetMapping("/my_role")
+    public List<String> getUserRoles(
+            @AuthenticationPrincipal UserEntity userDetails) {
+        return userDetails.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
     }
 }

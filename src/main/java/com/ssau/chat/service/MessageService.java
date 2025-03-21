@@ -8,6 +8,7 @@ import com.ssau.chat.entity.MessageEntity;
 import com.ssau.chat.entity.UserEntity;
 import com.ssau.chat.mapper.MessageMapper;
 import com.ssau.chat.repository.ChatRepository;
+import com.ssau.chat.repository.ChatUserRepository;
 import com.ssau.chat.repository.MessageRepository;
 import com.ssau.chat.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class MessageService {
     private final ChatRepository chatRepository;
     private final UserRepository userRepository;
     private final MessageMapper messageMapper;
+    private final ChatUserRepository chatUserRepository;
 
     public MessageDTO sendMessage(MessageCreateRequest messageCreateRequest) {
         ChatEntity chatEntity =
@@ -46,6 +48,11 @@ public class MessageService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         // TODO проверка пользователь находится в чате
+        if (chatUserRepository
+                .findByChatIdAndUserId(chatEntity.getId(), sender.getId())
+                .isEmpty()) {
+            throw new IllegalArgumentException(String.format("User %d is not in chat %d", sender.getId(), chatEntity.getId()));
+        }
 
         MessageDTO messageDTO = MessageDTO.builder()
                 .chatId(messageCreateRequest.getChatId())

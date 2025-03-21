@@ -27,6 +27,10 @@ public class ChatEntity {
     @Column(name = "description", length = 1000)
     private String description;
 
+    @ManyToOne
+    @JoinColumn(name = "creator_id", nullable = false)
+    private UserEntity creator;
+
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "date")
     private LocalDateTime createdAt; // Дата создания чата
 
