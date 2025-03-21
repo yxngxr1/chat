@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,8 +28,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Tag(name = "Пользователи", description = "API для управления пользователями")
 public class UserController {
-    @Autowired
-    private UserService userService;
+
+    private final UserService userService;
 
     @Operation(summary = "Создание нового пользователя", description = "Создает нового пользователя и возвращает ответ с токеном")
     @PostMapping
@@ -41,26 +42,35 @@ public class UserController {
     @PutMapping
     public LoginResponse updateUser(
             @RequestBody @Valid UserUpdateRequest userUpdateRequest,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserEntity userDetails) {
         return userService.updateUser(userUpdateRequest, userDetails);
     }
 
     @Operation(summary = "Удаление пользователя", description = "Удаляет пользователя по ID")
-    @DeleteMapping("/{id}")
-    public String deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return "User deleted successfully";
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{userId}")
+    public void deleteUser(
+            @PathVariable Long userId) {
+        userService.deleteUserById(userId);
+    }
+
+    @Operation(summary = "Удаление пользователя (себя)", description = "Удаляет пользователя по контексту")
+    @DeleteMapping("/me")
+    public void deleteUser(
+            @AuthenticationPrincipal UserEntity userDetails) {
+        userService.deleteMe(userDetails);
     }
 
     @Operation(summary = "Получение информации о пользователе", description = "Возвращает информацию о пользователе по его ID")
-    @GetMapping("/{id}")
-    public UserDTO getUserById(@PathVariable Long id) {
-        return userService.getUserById(id);
+    @GetMapping("/{userId}")
+    public UserDTO getUserById(
+            @PathVariable Long userId) {
+        return userService.getUserById(userId);
     }
 
     @Operation(summary = "Получение информации о себе", description = "Возвращает информацию о пользователе по его токену")
     @GetMapping("/me")
-    public UserDTO getUserById(
+    public UserDTO getMe(
             @AuthenticationPrincipal UserEntity userDetails) {
         return userService.getUserById(userDetails.getId());
     }
@@ -71,10 +81,12 @@ public class UserController {
         return userService.getAllUsers();
     }
 
-    @Operation(summary = "Получение чатов пользователя", description = "Возвращает все чаты пользователя по его ID")
-    @GetMapping("/{id}/chats")
-    public List<ChatDTO> getAllChatsById(@PathVariable Long id) {
-        return userService.getAllChatsById(id);
+    @Operation(summary = "Получить список пользователей чата", description = "Возвращает список пользователей, которые состоят в чате")
+    @GetMapping("/{chatId}/users")
+    public List<UserDTO> getUsersByChatId(
+            @PathVariable Long chatId,
+            @AuthenticationPrincipal UserEntity userDetails) {
+        return userService.getAllUsersByChatId(chatId, userDetails);
     }
 
     @GetMapping("/my_role")

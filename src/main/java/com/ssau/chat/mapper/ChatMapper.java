@@ -18,6 +18,7 @@ public class ChatMapper {
                 .name(chatEntity.getName())
                 .description(chatEntity.getDescription())
                 .creatorId(chatEntity.getCreator().getId())
+                .type(chatEntity.getType())
                 .createdAt(chatEntity.getCreatedAt())
                 .build();
     }

@@ -1,14 +1,12 @@
 package com.ssau.chat.controller;
 
-import com.ssau.chat.dto.Chat.ChatDTO;
 import com.ssau.chat.dto.Chat.ChatCreateRequest;
+import com.ssau.chat.dto.Chat.ChatDTO;
 import com.ssau.chat.dto.Chat.ChatUpdateRequest;
 import com.ssau.chat.dto.ChatUser.ChatUserCreateResponse;
-import com.ssau.chat.dto.User.UserDTO;
 import com.ssau.chat.entity.UserEntity;
 import com.ssau.chat.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Чаты", description = "API для управления чатами")
 public class ChatController {
+
     private final ChatService chatService;
 
     @Operation(summary = "Создание нового чата", description = "Создает новый чат с участниками")
@@ -59,7 +58,7 @@ public class ChatController {
     @GetMapping("/{chatId}")
     public ChatDTO getChatById(
             @PathVariable Long chatId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserEntity userDetails) {
         return chatService.getChatById(chatId, userDetails);
     }
 
@@ -75,14 +74,6 @@ public class ChatController {
     public List<ChatDTO> getAllChatsByUser(
             @AuthenticationPrincipal UserEntity userDetails) {
         return chatService.getAllChatsByUser(userDetails);
-    }
-
-    @Operation(summary = "Получить список пользователей чата", description = "Возвращает список пользователей, которые состоят в чате")
-    @GetMapping("/{chatId}/users")
-    public List<UserDTO> getUsersByChatId(
-            @PathVariable Long chatId,
-            @AuthenticationPrincipal UserEntity userDetails) {
-        return chatService.getAllUsersByChatId(chatId, userDetails);
     }
 
     @Operation(summary = "Добавление пользователя в чат", description = "Добавляет пользователя в чат")

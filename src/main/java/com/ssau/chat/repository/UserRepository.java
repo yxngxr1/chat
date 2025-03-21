@@ -13,10 +13,12 @@ import java.util.Set;
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long>{
     Optional<UserEntity> findByUsername(String username);
+    Optional<UserEntity> findByEmail(String email);
 
     @Query("SELECT u FROM UserEntity u WHERE u.id IN :userIds")
     List<UserEntity> findUsernamesByIds(@Param("userIds") Set<Long> userIds);
 
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
+
 }

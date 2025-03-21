@@ -1,5 +1,6 @@
 package com.ssau.chat.dto.Chat;
 
+import com.ssau.chat.entity.enums.ChatType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -28,6 +29,10 @@ public class ChatDTO {
     @NotBlank
     @Schema(description = "Создатель чата", example = "1")
     private Long creatorId;
+
+    @NotBlank
+    @Schema(description = "Тип чата")
+    private ChatType type;
 
     @NotBlank
     @Schema(description = "Дата и время создания чата", example = "2025-03-20T14:30:00")

@@ -1,51 +1,53 @@
 package com.ssau.chat.service;
 
-import com.ssau.chat.dto.Auth.LoginRequest;
 import com.ssau.chat.dto.Auth.LoginResponse;
-import com.ssau.chat.dto.Chat.ChatDTO;
 import com.ssau.chat.dto.User.UserCreateRequest;
 import com.ssau.chat.dto.User.UserDTO;
 import com.ssau.chat.dto.User.UserUpdateRequest;
+import com.ssau.chat.entity.ChatEntity;
 import com.ssau.chat.entity.UserEntity;
 import com.ssau.chat.entity.enums.Role;
-import com.ssau.chat.mapper.ChatMapper;
 import com.ssau.chat.mapper.UserMapper;
-import com.ssau.chat.repository.ChatUserRepository;
 import com.ssau.chat.repository.UserRepository;
 import com.ssau.chat.security.service.JwtService;
+import com.ssau.chat.service.utils.ChatServiceHelper;
+import com.ssau.chat.service.utils.UserServiceHelper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class UserService implements UserDetailsService {
 
     private final JwtService jwtService;
-    private final UserRepository userRepository;
-    private final ChatUserRepository chatUserRepository;
     private final PasswordEncoder passwordEncoder;
+
+    private final ChatUserService chatUserService;
+
+    private final ChatServiceHelper chatServiceHelper;
+    private final UserServiceHelper userServiceHelper;
+
+    private final UserRepository userRepository;
 
     public LoginResponse createUser(UserCreateRequest userCreateRequest) {
 
-        if (userRepository.existsByEmail(userCreateRequest.getEmail())) {
-            throw new IllegalArgumentException("Email is already taken");
+        if (userServiceHelper.userExistByUsername(userCreateRequest.getUsername())) {
+            throw new IllegalArgumentException("Username is already taken");
         }
 
-        if (userRepository.existsByUsername(userCreateRequest.getUsername())) {
-            throw new IllegalArgumentException("Username is already taken");
+        if (userServiceHelper.userExistByEmail(userCreateRequest.getEmail())) {
+            throw new IllegalArgumentException("Email is already taken");
         }
 
         UserEntity userEntity = UserEntity.builder()
@@ -65,68 +67,27 @@ public class UserService implements UserDetailsService {
 
     }
 
-    public void deleteUser(Long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new IllegalArgumentException(String.format("User %d not found", userId));
-        }
-        userRepository.deleteById(userId);
-    }
-
-    public UserDTO getUserById(Long id) {
-        UserEntity userEntity = userRepository
-                .findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(String.format("User with id %d not found", id)));
-        return UserMapper.toDto(userEntity);
-    }
-
-    public List<UserDTO> getAllUsers() {
-        return userRepository
-                .findAll().stream()
-                .map(UserMapper::toDto)
-                .collect(Collectors.toList());
-    }
-
-    public List<ChatDTO> getAllChatsById(Long id) {
-        return chatUserRepository
-                .findAllChatsByUserId(id).stream()
-                .map(ChatMapper::toDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) {
-        return userRepository
-                .findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Пользователь с именем " + username + " не найден"));
-    }
-
-    public List<UserDTO> findUsersByIds(Set<Long> ids) {
-        return userRepository
-                .findUsernamesByIds(ids).stream()
-                .map(UserMapper::toDto)
-                .collect(Collectors.toList());
-    }
-
     public LoginResponse updateUser(@Valid UserUpdateRequest userUpdateRequest, UserDetails userDetails) {
-        UserEntity user = userRepository
-                .findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        // access проверять вроде не надо ибо userDetails берется через контекст
+
+        UserEntity user = userServiceHelper.findUserByUsername(userDetails.getUsername());
+
+        if (userUpdateRequest.getUsername() != null &&
+                !userUpdateRequest.getUsername().equals(user.getUsername())) {
+            if (userServiceHelper.userExistByUsername(userUpdateRequest.getUsername())) {
+                throw new IllegalArgumentException("Username is already taken");
+            }
+            user.setUsername(userUpdateRequest.getUsername());
+        }
 
         if (userUpdateRequest.getEmail() != null &&
                 !userUpdateRequest.getEmail().equals(user.getEmail())) {
-            if (userRepository.existsByEmail(userUpdateRequest.getEmail())) {
+            if (userServiceHelper.userExistByEmail(userUpdateRequest.getEmail())) {
                 throw new IllegalArgumentException("Email is already taken");
             }
             user.setEmail(userUpdateRequest.getEmail());
         }
 
-        if (userUpdateRequest.getUsername() != null &&
-                !userUpdateRequest.getUsername().equals(user.getUsername())) {
-            if (userRepository.existsByUsername(userUpdateRequest.getUsername())) {
-                throw new IllegalArgumentException("Username is already taken");
-            }
-            user.setUsername(userUpdateRequest.getUsername());
-        }
         if (userUpdateRequest.getPassword() != null) {
             user.setPassword(passwordEncoder.encode(userUpdateRequest.getPassword()));
         }
@@ -138,5 +99,42 @@ public class UserService implements UserDetailsService {
 
         return new LoginResponse(accessToken, refreshToken);
     }
-}
 
+    public void deleteUserById(Long userId) {
+        UserEntity user = userServiceHelper.findUserById(userId);
+        userRepository.deleteById(user.getId());
+    }
+
+    public void deleteMe(UserEntity userDetails) {
+        UserEntity user = userServiceHelper.findUserByUsername(userDetails.getUsername());
+        userRepository.delete(user);
+    }
+
+    public UserDTO getUserById(Long id) {
+        UserEntity user = userServiceHelper.findUserById(id);
+        return UserMapper.toDto(user);
+    }
+
+    public List<UserDTO> getAllUsers() {
+        return userRepository
+                .findAll().stream()
+                .map(UserMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<UserDTO> getAllUsersByChatId(Long chatId, UserEntity userDetails) {
+        ChatEntity chat = chatServiceHelper.findChatById(chatId);
+
+        if (!chatUserService.userInChat(chatId, userDetails.getId())) {
+            throw new AccessDeniedException("You are not in this chat");
+        }
+
+        return chatUserService.findAllUsersByChatId(chatId);
+    }
+
+    public UserDetails loadUserByUsername(String username) {
+        return userRepository
+                .findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь с именем " + username + " не найден"));
+    }
+}
