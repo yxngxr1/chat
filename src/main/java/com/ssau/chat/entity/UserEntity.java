@@ -9,9 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "app_user") // Название таблицы в БД

@@ -4,7 +4,6 @@ import com.ssau.chat.dto.Message.MessageCreateRequest;
 import com.ssau.chat.dto.Message.MessageDTO;
 import com.ssau.chat.dto.Message.MessageUpdateRequest;
 import com.ssau.chat.entity.ChatEntity;
-import com.ssau.chat.entity.ChatUserEntity;
 import com.ssau.chat.entity.MessageEntity;
 import com.ssau.chat.entity.UserEntity;
 import com.ssau.chat.mapper.MessageMapper;
@@ -17,10 +16,6 @@ import com.ssau.chat.service.utils.UserServiceHelper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

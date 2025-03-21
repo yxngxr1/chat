@@ -23,12 +23,12 @@ spring:
 
 security:
   jwt:
-    access_token_expiration: 3600000
-    refresh_token_expiration: 604800000
+    access_token_expiration: ${JWT_ACCESS_TOKEN_EXPIRATION}
+    refresh_token_expiration: ${JWT_REFRESH_TOKEN_EXPIRATION}
 
 secure:
   jwt:
-    secret_key: mySuperSecretKey123!@#$%^&*()dg5gGEFDg5e
+    secret_key: ${JWT_SECRET_KEY}
 
 springdoc:
   api-docs:

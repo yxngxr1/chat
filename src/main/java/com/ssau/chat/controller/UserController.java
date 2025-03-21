@@ -1,23 +1,18 @@
 package com.ssau.chat.controller;
 
 import com.ssau.chat.dto.Auth.LoginResponse;
-import com.ssau.chat.dto.Chat.ChatDTO;
 import com.ssau.chat.dto.User.UserCreateRequest;
-import com.ssau.chat.dto.Chat.ChatUpdateRequest;
 import com.ssau.chat.dto.User.UserDTO;
 import com.ssau.chat.dto.User.UserUpdateRequest;
 import com.ssau.chat.entity.UserEntity;
-import com.ssau.chat.service.AuthService;
 import com.ssau.chat.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

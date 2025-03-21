@@ -6,7 +6,6 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Table(name = "chat") // Название таблицы в БД
