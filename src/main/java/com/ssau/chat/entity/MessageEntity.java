@@ -5,7 +5,9 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "message") // Название таблицы в БД
+@Table(name = "message", indexes = {
+        @Index(name = "idx_chat_id", columnList = "chat_id") // Индекс на chat_id
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,7 +28,7 @@ public class MessageEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity sender; // Отправитель сообщения
 
-    @Column(name = "content", nullable = false, length = 1000)
+    @Column(name = "content", nullable = false, length = 10000)
     private String content; // Текст сообщения
 
     @Column(name = "sent_at", nullable = false, updatable = false)

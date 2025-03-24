@@ -3,17 +3,23 @@ package com.ssau.chat.controller;
 import com.ssau.chat.dto.Chat.ChatCreateRequest;
 import com.ssau.chat.dto.Chat.ChatDTO;
 import com.ssau.chat.dto.Chat.ChatUpdateRequest;
+import com.ssau.chat.dto.ChatUser.ChatUserCreateRequest;
 import com.ssau.chat.dto.ChatUser.ChatUserCreateResponse;
+import com.ssau.chat.dto.ChatUser.ChatUserDeleteRequest;
+import com.ssau.chat.dto.ChatUser.ChatUserDeleteResponse;
 import com.ssau.chat.entity.UserEntity;
 import com.ssau.chat.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,7 +28,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/chats")
 @RequiredArgsConstructor
+@Validated
 @Tag(name = "Чаты", description = "API для управления чатами")
+@SecurityRequirement(name = "bearerAuth")
 public class ChatController {
 
     private final ChatService chatService;
@@ -50,7 +58,7 @@ public class ChatController {
     @DeleteMapping("/{chatId}")
     public void deleteChat(
             @PathVariable Long chatId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserEntity userDetails) {
         chatService.deleteChat(chatId, userDetails);
     }
 
@@ -77,20 +85,20 @@ public class ChatController {
     }
 
     @Operation(summary = "Добавление пользователя в чат", description = "Добавляет пользователя в чат")
-    @PostMapping("/{chatId}/join/{userId}")
+    @PostMapping("/{chatId}/join")
     public ChatUserCreateResponse joinUserInChat(
             @PathVariable Long chatId,
-            @PathVariable Long userId,
+            @RequestBody @Valid ChatUserCreateRequest chatUserCreateRequest,
             @AuthenticationPrincipal UserEntity userDetails) {
-        return chatService.addUserToChat(chatId, userId, userDetails);
+        return chatService.addUsersToChat(chatId, chatUserCreateRequest, userDetails);
     }
 
     @Operation(summary = "Удаление пользователя из чата", description = "Удаляет пользователя из чата")
-    @DeleteMapping("/{chatId}/leave/{userId}")
-    public void leaveUserFromChat(
+    @DeleteMapping("/{chatId}/leave")
+    public ChatUserDeleteResponse leaveUserFromChat(
             @PathVariable Long chatId,
-            @PathVariable Long userId,
+            @RequestBody @Valid ChatUserDeleteRequest chatUserDeleteRequest,
             @AuthenticationPrincipal UserEntity userDetails) {
-        chatService.leaveUserFromChat(chatId, userId, userDetails);
+        return chatService.leaveUserFromChat(chatId, chatUserDeleteRequest, userDetails);
     }
 }

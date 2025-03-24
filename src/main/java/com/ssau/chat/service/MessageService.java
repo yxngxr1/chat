@@ -3,6 +3,7 @@ package com.ssau.chat.service;
 import com.ssau.chat.dto.Message.MessageCreateRequest;
 import com.ssau.chat.dto.Message.MessageDTO;
 import com.ssau.chat.dto.Message.MessageUpdateRequest;
+import com.ssau.chat.dto.User.UserDTO;
 import com.ssau.chat.entity.ChatEntity;
 import com.ssau.chat.entity.MessageEntity;
 import com.ssau.chat.entity.UserEntity;
@@ -15,6 +16,7 @@ import com.ssau.chat.service.utils.ChatServiceHelper;
 import com.ssau.chat.service.utils.UserServiceHelper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +26,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class MessageService {
+
+    private final SimpMessagingTemplate messagingTemplate;
 
     private final ChatUserService chatUserService;
 
@@ -43,14 +47,29 @@ public class MessageService {
             throw new AccessDeniedException("Тебя нет в этом чате");
         }
 
-        MessageDTO messageDTO = MessageDTO.builder()
-                .chatId(chatId)
+        MessageEntity messageEntity = MessageEntity.builder()
+                .chat(chat)
+                .sender(user)
                 .content(messageCreateRequest.getContent())
                 .build();
-        MessageEntity messageEntity = MessageMapper.toEntity(messageDTO, chat, user);
         MessageEntity savedMessage = messageRepository.save(messageEntity);
 
         return MessageMapper.toDto(savedMessage);
+    }
+
+    public MessageDTO createMessage(Long chatId, Long senderId, String content) {
+        ChatEntity chat = chatServiceHelper.findChatById(chatId);
+        UserEntity user = userServiceHelper.findUserById(senderId);
+
+        MessageEntity messageEntity = MessageEntity.builder()
+                .chat(chat)
+                .sender(user)
+                .content(content)
+                .build();
+        MessageEntity savedMessage = messageRepository.save(messageEntity);
+
+        return MessageMapper.toDto(savedMessage);
+
     }
 
     public MessageDTO updateMessage(Long chatId, Long msgId, MessageUpdateRequest messageUpdateRequest, UserEntity userDetails) {

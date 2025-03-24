@@ -123,11 +123,11 @@ public class UserService implements UserDetailsService {
     }
 
     public List<UserDTO> getAllUsersByChatId(Long chatId, UserEntity userDetails) {
-        ChatEntity chat = chatServiceHelper.findChatById(chatId);
-
         if (!chatUserService.userInChat(chatId, userDetails.getId())) {
             throw new AccessDeniedException("You are not in this chat");
         }
+        
+        ChatEntity chat = chatServiceHelper.findChatById(chatId);
 
         return chatUserService.findAllUsersByChatId(chatId);
     }

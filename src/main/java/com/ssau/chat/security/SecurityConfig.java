@@ -2,6 +2,8 @@ package com.ssau.chat.security;
 
 import com.ssau.chat.security.filter.JwtFilter;
 import com.ssau.chat.service.UserService;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +17,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -23,6 +26,12 @@ import java.util.Arrays;
 
 @Configuration
 @AllArgsConstructor
+@SecurityScheme(
+        name = "bearerAuth",
+        type = SecuritySchemeType.HTTP,
+        scheme = "bearer",
+        bearerFormat = "JWT"
+)
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
 public class SecurityConfig {
@@ -32,7 +41,7 @@ public class SecurityConfig {
     private final PasswordEncoder passwordEncoder;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, WebRequest webRequest) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable) // Отключаем CSRF, если не используем формы
@@ -40,17 +49,17 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/swagger-resources/*").permitAll()
+                                "/swagger-resources/*",
+                                "/ws/**").permitAll()
                         .requestMatchers(HttpMethod.POST,
                                 "/api/auth/access_token",
                                 "/api/auth/refresh_token",
                                 "/api/users").permitAll()
-                        .anyRequest().authenticated() // Все остальные запросы требуют авторизации
-
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-    //                .formLogin(Customizer.withDefaults()) // Включаем стандартную форму логина
-    //                .httpBasic(Customizer.withDefaults()); // Включаем Basic Auth
+//                    .formLogin(Customizer.withDefaults())
+    //                .httpBasic(Customizer.withDefaults());
 
         return http.build();
     }

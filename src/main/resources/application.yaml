@@ -33,9 +33,17 @@ secure:
 springdoc:
   api-docs:
     enabled: true
+    path: /v3/api-docs
   swagger-ui:
     enabled: true
     operations-sorter: method
+    path: /swagger-ui.html
   default-produces-media-type: application/json
-
-
+  default-consumes-media-type: application/json
+  info:
+    title: "Chat API"
+    version: "1.0"
+    description: "API for managing users, chats, and messages in the Chat Application"
+    contact:
+      name: "yxngxr1"
+      email: "gderganov@yandex.com"

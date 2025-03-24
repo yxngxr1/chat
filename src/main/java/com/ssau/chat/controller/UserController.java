@@ -7,12 +7,14 @@ import com.ssau.chat.dto.User.UserUpdateRequest;
 import com.ssau.chat.entity.UserEntity;
 import com.ssau.chat.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Validated
 @Tag(name = "Пользователи", description = "API для управления пользователями")
 public class UserController {
 
@@ -34,6 +37,7 @@ public class UserController {
     }
 
     @Operation(summary = "Обновление данных пользователя", description = "Обновляет информацию о пользователе")
+    @SecurityRequirement(name = "bearerAuth")
     @PutMapping
     public LoginResponse updateUser(
             @RequestBody @Valid UserUpdateRequest userUpdateRequest,
@@ -42,6 +46,7 @@ public class UserController {
     }
 
     @Operation(summary = "Удаление пользователя", description = "Удаляет пользователя по ID")
+    @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{userId}")
     public void deleteUser(
@@ -50,6 +55,7 @@ public class UserController {
     }
 
     @Operation(summary = "Удаление пользователя (себя)", description = "Удаляет пользователя по контексту")
+    @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/me")
     public void deleteUser(
             @AuthenticationPrincipal UserEntity userDetails) {
@@ -57,6 +63,7 @@ public class UserController {
     }
 
     @Operation(summary = "Получение информации о пользователе", description = "Возвращает информацию о пользователе по его ID")
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/{userId}")
     public UserDTO getUserById(
             @PathVariable Long userId) {
@@ -64,6 +71,7 @@ public class UserController {
     }
 
     @Operation(summary = "Получение информации о себе", description = "Возвращает информацию о пользователе по его токену")
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/me")
     public UserDTO getMe(
             @AuthenticationPrincipal UserEntity userDetails) {
@@ -71,19 +79,23 @@ public class UserController {
     }
 
     @Operation(summary = "Получение всех пользователей", description = "Возвращает список всех пользователей")
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping
     public List<UserDTO> getAllUsers() {
         return userService.getAllUsers();
     }
 
     @Operation(summary = "Получить список пользователей чата", description = "Возвращает список пользователей, которые состоят в чате")
-    @GetMapping("/{chatId}/users")
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/chat/{chatId}")
     public List<UserDTO> getUsersByChatId(
             @PathVariable Long chatId,
             @AuthenticationPrincipal UserEntity userDetails) {
         return userService.getAllUsersByChatId(chatId, userDetails);
     }
 
+    @Operation(summary = "Получить мою роль", description = "Возвращает роль пользователя в системе")
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/my_role")
     public List<String> getUserRoles(
             @AuthenticationPrincipal UserEntity userDetails) {

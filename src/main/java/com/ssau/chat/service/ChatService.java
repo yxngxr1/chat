@@ -3,7 +3,10 @@ package com.ssau.chat.service;
 import com.ssau.chat.dto.Chat.ChatCreateRequest;
 import com.ssau.chat.dto.Chat.ChatDTO;
 import com.ssau.chat.dto.Chat.ChatUpdateRequest;
+import com.ssau.chat.dto.ChatUser.ChatUserCreateRequest;
 import com.ssau.chat.dto.ChatUser.ChatUserCreateResponse;
+import com.ssau.chat.dto.ChatUser.ChatUserDeleteRequest;
+import com.ssau.chat.dto.ChatUser.ChatUserDeleteResponse;
 import com.ssau.chat.dto.User.UserDTO;
 import com.ssau.chat.entity.ChatEntity;
 import com.ssau.chat.entity.ChatUserEntity;
@@ -56,11 +59,11 @@ public class ChatService {
     }
 
     public ChatDTO getChatById(Long chatId, UserEntity userDetails) {
-        ChatEntity chat = chatServiceHelper.findChatById(chatId);
-
         if (!chatUserService.userInChat(chatId, userDetails.getId())) {
             throw new AccessDeniedException("You are not in this chat");
         }
+
+        ChatEntity chat = chatServiceHelper.findChatById(chatId);
 
         return ChatMapper.toDto(chat);
     }
@@ -95,20 +98,20 @@ public class ChatService {
             throw new IllegalArgumentException("Private chat already exists");
         }
         Set<Long> userIdsSet = new HashSet<>(Set.of(creatorId, secondUserId));
-        ChatDTO chatDTO = createChat(chatCreateRequest, userIdsSet, creator);
-        addUsersToChat(chatDTO.getId(), userIdsSet);
+        ChatEntity chatEntity = createChat(chatCreateRequest, userIdsSet, creator);
+        createChatUsers(chatEntity, userIdsSet);
 
-        return chatDTO;
+        return ChatMapper.toDto(chatEntity);
     }
 
     private ChatDTO createGroupChat(ChatCreateRequest chatCreateRequest, UserEntity creator) {
         Set<Long> userIds = new HashSet<>(chatCreateRequest.getUserIds());
         userIds.add(creator.getId());
 
-        ChatDTO chatDTO = createChat(chatCreateRequest, userIds, creator);
-        addUsersToChat(chatDTO.getId(), userIds);
+        ChatEntity chatEntity = createChat(chatCreateRequest, userIds, creator);
+        createChatUsers(chatEntity, userIds);
 
-        return chatDTO;
+        return ChatMapper.toDto(chatEntity);
     }
 
     private ChatDTO createSelfChat(ChatCreateRequest chatCreateRequest, UserEntity creator) {
@@ -117,12 +120,12 @@ public class ChatService {
         if (getSelfChat(creatorId).isPresent()) {
             throw new IllegalArgumentException("Self chat already exists");
         }
-        ChatDTO chatDTO = createChat(chatCreateRequest, new HashSet<>(Set.of(creatorId)), creator);
-        addUsersToChat(chatDTO.getId(), new HashSet<>(Set.of(creatorId)));
-        return chatDTO;
+        ChatEntity chatEntity = createChat(chatCreateRequest, new HashSet<>(Set.of(creatorId)), creator);
+        createChatUsers(chatEntity, new HashSet<>(Set.of(creatorId)));
+        return ChatMapper.toDto(chatEntity);
     }
 
-    private ChatDTO createChat(ChatCreateRequest chatCreateRequest, Set<Long> userIds, UserEntity creator) {
+    private ChatEntity createChat(ChatCreateRequest chatCreateRequest, Set<Long> userIds, UserEntity creator) {
 
         List<UserDTO> users = userServiceHelper.findUsersByIds(userIds);
 
@@ -137,50 +140,10 @@ public class ChatService {
                 .type(chatCreateRequest.getChatType())
                 .build();
 
-        ChatEntity savedChat = chatRepository.save(chat);
-        return ChatMapper.toDto(savedChat);
+        return chatRepository.save(chat);
     }
 
-    public ChatUserCreateResponse addUserToChat(Long chatId, Long userId, UserEntity userDetails) {
-        ChatEntity chat = chatServiceHelper.findChatById(chatId);
-
-        if (!chatUserService.userInChat(chatId, userDetails.getId())) {
-            throw new AccessDeniedException("You are not in this chat");
-        }
-
-        if (chat.getType() != ChatType.GROUP) {
-            throw new IllegalArgumentException(String.format("Chat type %s is not supported adding users", chat.getType()));
-        }
-
-        UserEntity user = userServiceHelper.findUserById(userId);
-
-        if (chatUserService.userInChat(chatId, user.getId())) {
-            throw new IllegalArgumentException(String.format("User %d is already in the chat %d", userId, chatId));
-        }
-
-        ChatUserEntity chatUser = new ChatUserEntity(chat, user);
-        log.debug("Create ChatUser {}", chatUser.getId());
-
-        ChatUserEntity savedChatUser = chatUserRepository.save(chatUser);
-
-        log.info("Adding user {} to chat {}", userId, chatId);
-
-        ChatUserCreateResponse chatUserCreateResponse = ChatUserCreateResponse.builder()
-                .chatId(savedChatUser.getChat().getId())
-                .userId(savedChatUser.getUser().getId())
-                .joinedAt(savedChatUser.getJoinedAt())
-                .build();
-
-        return chatUserCreateResponse;
-    }
-
-
-    public void addUsersToChat(Long chatId, Set<Long> userIds) {
-        ChatEntity chat = chatServiceHelper.findChatById(chatId);
-
-        if (chat.getType() != ChatType.GROUP) {
-            throw new IllegalArgumentException(String.format("Chat type %s is not supported adding users", chat.getType()));
-        }
+    private List<Long> createChatUsers(ChatEntity chat, Set<Long> userIds) {
 
         List<UserEntity> users = userRepository.findAllById(userIds);
         if (users.size() != userIds.size()) {
@@ -188,8 +151,8 @@ public class ChatService {
         }
 
         // Получаем уже существующих участников чата
-        Set<Long> existingUserIds = chatUserRepository.findByChatId(chatId).stream()
-                .map(chatUser -> chatUser.getUser().getId())
+        Set<Long> existingUserIds = chatUserRepository.findByChatId(chat.getId()).stream()
+                .map(chatUser -> chatUser.getId().getUserId())
                 .collect(Collectors.toSet());
 
         List<ChatUserEntity> newUsers = new ArrayList<>();
@@ -199,10 +162,51 @@ public class ChatService {
             }
         }
 
+        String newUsersS = newUsers.stream()
+                .map(chatUserEntity -> chatUserEntity.getId().getUserId())
+                .toList()
+                .toString();
+
         if (!newUsers.isEmpty()) {
             chatUserRepository.saveAll(newUsers); // Сохраняем всех за раз
-            log.info("Added {} new users to chat {}", newUsers.size(), chatId);
+            log.info("Added {} new users to chat {}", newUsersS, chat.getId());
         }
+
+        return newUsers.stream()
+                .map(chatUser -> chatUser.getId().getUserId())
+                .toList();
+    }
+
+    private List<Long> deleteChatUsers(ChatEntity chat, Set<Long> userIds) {
+
+        List<UserEntity> users = userRepository.findAllById(userIds);
+        if (users.size() != userIds.size()) {
+            throw new IllegalArgumentException("Some user IDs are invalid");
+        }
+
+        Set<Long> existingUserIds = chatUserRepository.findByChatId(chat.getId()).stream()
+                .map(chatUser -> chatUser.getId().getUserId())
+                .collect(Collectors.toSet());
+
+        List<ChatUserEntity> delUsers = new ArrayList<>();
+        for (UserEntity user : users) {
+            if (existingUserIds.contains(user.getId())) {
+                delUsers.add(new ChatUserEntity(chat, user));
+            }
+        }
+
+        String delUsersS = delUsers.stream()
+                .map(chatUserEntity -> chatUserEntity.getId().getUserId())
+                .toList()
+                .toString();
+        if (!delUsers.isEmpty()) {
+            chatUserRepository.deleteAll(delUsers);
+            log.info("Deleted {} users from chat {}", delUsersS, chat.getId());
+        }
+
+        return delUsers.stream()
+                .map(chatUser -> chatUser.getId().getUserId())
+                .toList();
     }
 
 
@@ -215,30 +219,57 @@ public class ChatService {
         return chatUserRepository.findSelfChat(userId);
     }
 
-    public void leaveUserFromChat(Long chatId, Long userId, UserEntity userDetails) {
+    public ChatUserCreateResponse addUsersToChat(Long chatId, ChatUserCreateRequest chatUserCreateRequest, UserEntity userDetails) {
         ChatEntity chat = chatServiceHelper.findChatById(chatId);
-
-        if (!chatServiceHelper.userIsChatCreator(userDetails.getId(), chat.getCreator().getId())) {
-            throw new AccessDeniedException("You are not creator of this chat");
-        }
 
         if (!chatUserService.userInChat(chatId, userDetails.getId())) {
             throw new AccessDeniedException("You are not in this chat");
         }
 
-        UserEntity userToLeave = userServiceHelper.findUserById(userId);
+        if (chat.getType() != ChatType.GROUP) {
+            throw new IllegalArgumentException(String.format("Chat type %s is not supported adding users", chat.getType()));
+        }
 
-        ChatUserEntity existingChatUser = chatUserService.findChatUser(chatId, userToLeave.getId());
+        List<Long> newUsers = createChatUsers(chat, new HashSet<>(chatUserCreateRequest.getUserIds()));
 
-        chatUserRepository.delete(existingChatUser);
+        ChatUserCreateResponse chatUserCreateResponse = ChatUserCreateResponse.builder()
+                .chatId(chatId)
+                .userIds(newUsers)
+                .build();
+
+        return chatUserCreateResponse;
+    }
+
+    public ChatUserDeleteResponse leaveUserFromChat(Long chatId, ChatUserDeleteRequest chatUserDeleteRequest, UserEntity userDetails) {
+        ChatEntity chat = chatServiceHelper.findChatById(chatId);
+
+        if (!chatUserService.userInChat(chatId, userDetails.getId())) {
+            throw new AccessDeniedException("You are not in this chat");
+        }
+
+        if (!chatServiceHelper.userIsChatCreator(userDetails.getId(), chat.getCreator().getId())) {
+            throw new AccessDeniedException("You are not creator of this chat");
+        }
+
+        if (chat.getType() != ChatType.GROUP) {
+            throw new IllegalArgumentException(String.format("Chat type %s is not supported adding users", chat.getType()));
+        }
+
+        List<Long> newUsers = deleteChatUsers(chat, new HashSet<>(chatUserDeleteRequest.getUserIds()));
+
+        ChatUserDeleteResponse chatUserDeleteResponse = ChatUserDeleteResponse.builder()
+                .chatId(chatId)
+                .userIds(newUsers)
+                .build();
+
+        return chatUserDeleteResponse;
     }
 
     @Transactional
-    public void deleteChat(Long chatId, UserDetails userDetails) {
+    public void deleteChat(Long chatId, UserEntity userDetails) {
         ChatEntity chat = chatServiceHelper.findChatById(chatId);
-        UserEntity user = userServiceHelper.findUserByUsername(userDetails.getUsername());
 
-        if (!chatServiceHelper.userIsChatCreator(user, chat)) {
+        if (!chatServiceHelper.userIsChatCreator(userDetails.getId(), chat.getCreator().getId())) {
             throw new AccessDeniedException("You are not creator of this chat");
         }
 
@@ -259,9 +290,9 @@ public class ChatService {
         UserEntity user = userServiceHelper.findUserByUsername(userDetails.getUsername());
 
         // является ли пользователь владельцем чата
-        if (!chatServiceHelper.userIsChatCreator(user, chat)) {
-            throw new AccessDeniedException("Only creator can edit");
-        }
+//        if (!chatServiceHelper.userIsChatCreator(user, chat)) {
+//            throw new AccessDeniedException("Only creator can edit");
+//        }
 
         log.debug(chatUpdateRequest.toString());
         chat.setName(chatUpdateRequest.getName());

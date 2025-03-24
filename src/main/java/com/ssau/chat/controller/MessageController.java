@@ -1,16 +1,20 @@
 package com.ssau.chat.controller;
 
-import com.ssau.chat.dto.Message.MessageCreateRequest;
-import com.ssau.chat.dto.Message.MessageDTO;
-import com.ssau.chat.dto.Message.MessageUpdateRequest;
+import com.ssau.chat.dto.Message.*;
 import com.ssau.chat.entity.UserEntity;
+import com.ssau.chat.service.ChatService;
 import com.ssau.chat.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,8 +23,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/messages")
 @RequiredArgsConstructor
+@Validated
 @Tag(name = "Сообщения", description = "API для работы с сообщениями чатов")
+@SecurityRequirement(name = "bearerAuth")
 public class MessageController {
+
     private final MessageService messageService;
 
     // TODO сделать отправку и прием сообщений по websocket
@@ -29,7 +36,7 @@ public class MessageController {
     @PostMapping("/chat/{chatId}")
     public MessageDTO sendMessage(
             @PathVariable Long chatId,
-            @RequestBody @Valid MessageCreateRequest messageCreateRequest,
+            @Valid @RequestBody MessageCreateRequest messageCreateRequest,
             @AuthenticationPrincipal UserEntity userDetails) {
         return messageService.sendMessage(chatId, messageCreateRequest, userDetails);
     }

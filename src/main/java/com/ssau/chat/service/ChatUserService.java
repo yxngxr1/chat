@@ -29,7 +29,7 @@ public class ChatUserService {
     }
 
     public boolean userInChat(Long chatId, Long userId){
-        return chatUserRepository.findByChatIdAndUserId(chatId, chatId).isPresent();
+        return chatUserRepository.findByChatIdAndUserId(chatId, userId).isPresent();
     }
 
     public List<UserDTO> findAllUsersByChatId(Long chatId) {
