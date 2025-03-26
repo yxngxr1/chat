@@ -12,6 +12,7 @@ import com.ssau.chat.repository.UserRepository;
 import com.ssau.chat.security.service.JwtService;
 import com.ssau.chat.service.utils.ChatServiceHelper;
 import com.ssau.chat.service.utils.UserServiceHelper;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -135,6 +136,6 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) {
         return userRepository
                 .findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Пользователь с именем " + username + " не найден"));
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь с именем " + username + " не найден"));
     }
 }
