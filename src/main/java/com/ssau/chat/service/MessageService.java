@@ -3,6 +3,7 @@ package com.ssau.chat.service;
 import com.ssau.chat.dto.Message.MessageCreateRequest;
 import com.ssau.chat.dto.Message.MessageDTO;
 import com.ssau.chat.dto.Message.MessageUpdateRequest;
+import com.ssau.chat.dto.Message.WsMessageCreateRequest;
 import com.ssau.chat.dto.User.UserDTO;
 import com.ssau.chat.entity.ChatEntity;
 import com.ssau.chat.entity.MessageEntity;

@@ -252,7 +252,7 @@ public class ChatService {
         }
 
         if (chat.getType() != ChatType.GROUP) {
-            throw new IllegalArgumentException(String.format("Chat type %s is not supported adding users", chat.getType()));
+            throw new IllegalArgumentException(String.format("Chat type %s is not supported deleting users", chat.getType()));
         }
 
         List<Long> newUsers = deleteChatUsers(chat, new HashSet<>(chatUserDeleteRequest.getUserIds()));

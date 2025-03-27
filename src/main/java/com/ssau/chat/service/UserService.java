@@ -68,7 +68,7 @@ public class UserService implements UserDetailsService {
 
     }
 
-    public LoginResponse updateUser(@Valid UserUpdateRequest userUpdateRequest, UserDetails userDetails) {
+    public LoginResponse updateUser(UserUpdateRequest userUpdateRequest, UserDetails userDetails) {
         // access проверять вроде не надо ибо userDetails берется через контекст
 
         UserEntity user = userServiceHelper.findUserByUsername(userDetails.getUsername());
