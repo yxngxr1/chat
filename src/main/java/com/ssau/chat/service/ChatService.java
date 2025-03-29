@@ -91,7 +91,6 @@ public class ChatService {
         }
 
         // проверка на существование
-        UserEntity creatorUser = userServiceHelper.findUserById(creatorId);
         UserEntity user = userServiceHelper.findUserById(secondUserId);
 
         if (privateChatExists(creatorId, secondUserId)) {

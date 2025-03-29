@@ -55,11 +55,11 @@ public class SecurityConfig {
                                 "/api/auth/access_token",
                                 "/api/auth/refresh_token",
                                 "/api/users").permitAll()
+                        .requestMatchers(
+                                "/", "/index.html", "/*.ico", "/*.js", "/*.css").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-//                    .formLogin(Customizer.withDefaults())
-    //                .httpBasic(Customizer.withDefaults());
 
         return http.build();
     }

@@ -3,7 +3,9 @@ package com.ssau.chat.service;
 import com.ssau.chat.dto.Message.MessageDTO;
 import com.ssau.chat.dto.Message.WsMessageCreateRequest;
 import com.ssau.chat.dto.User.UserDTO;
+import com.ssau.chat.entity.ChatEntity;
 import com.ssau.chat.entity.UserEntity;
+import com.ssau.chat.service.utils.ChatServiceHelper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
@@ -27,14 +29,17 @@ public class WsMessageService {
     private final ChatUserService chatUserService;
     private final MessageService messageService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ChatServiceHelper chatServiceHelper;
 
     public void processWebSocketMessage(WsMessageCreateRequest request, Principal principal) {
         log.info("Processing WebSocket message: {}", request);
 
-        // 1. Валидация входящего сообщения
+        // Валидация входящего сообщения
         Set<ConstraintViolation<WsMessageCreateRequest>> violations = validator.validate(
                 request
         );
+
+        ChatEntity chat = chatServiceHelper.findChatById(request.getChatId());
 
         if (!violations.isEmpty()) {
             throw new ConstraintViolationException(violations);
@@ -45,7 +50,7 @@ public class WsMessageService {
             throw new AccessDeniedException("Не удалось определить пользователя");
         }
 
-        // 2. Проверка, находится ли пользователь в чате
+        //  Проверка, находится ли пользователь в чате
         if (!chatUserService.userInChat(request.getChatId(), userId)) {
             throw new AccessDeniedException("Тебя нет в этом чате");
         }

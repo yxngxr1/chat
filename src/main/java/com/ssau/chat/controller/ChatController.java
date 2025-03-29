@@ -70,7 +70,7 @@ public class ChatController {
         return chatService.getChatById(chatId, userDetails);
     }
 
-    @Operation(summary = "Получить список чатов", description = "Возвращает все чаты текущего пользователя")
+    @Operation(summary = "Получить список чатов", description = "Возвращает все чаты")
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/all")
     public List<ChatDTO> getAllChats() {
