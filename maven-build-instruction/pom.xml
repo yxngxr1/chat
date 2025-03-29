@@ -19,7 +19,7 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>chat</module>
 		<module>chat-web</module>
+		<module>chat</module>
 	</modules>
 </project>

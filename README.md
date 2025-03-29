@@ -57,12 +57,15 @@
    cp ./chat/maven-build-instruction/pom.xml ./
    cp ./chat/maven-build-instruction/back/pom.xml ./chat/
    cp ./chat/maven-build-instruction/front/pom.xml ./chat-web/
-   cp ./chat/.env ./
+   cp ./chat/.env.example ./
 
-4. Настройте .env файл окружения по образцу .env.example
+4. Настройте .env файл окружения по образцу .env.example в ./ и в ./chat
 
 5. Соберите и запустите проект
    ```bash
+   mvn clean install
    java -jar .\chat\target\chat-backend-0.0.1-SNAPSHOT.jar
 
 #### После выполнения этих шагов API с выдачей web (spa) приложения будет доступен на локальном сервере по умолчанию (http://localhost:8080).
+![img.png](img.png)
+![img_1.png](img_1.png)
