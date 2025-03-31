@@ -12,10 +12,10 @@ spring:
   application:
     name: chat
   datasource:
+    url: jdbc:postgresql://${DB_SERVER}/${POSTGRES_DB}
     driver-class-name: org.postgresql.Driver
-    password: ${DB_PASSWORD}
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
   jpa:
     database: postgresql
     hibernate:
