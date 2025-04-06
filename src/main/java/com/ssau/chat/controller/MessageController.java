@@ -17,6 +17,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Slf4j
@@ -51,14 +54,28 @@ public class MessageController {
         return messageService.updateMessage(chatId, msgId, messageUpdateRequest, userDetails);
     }
 
-    @Operation(summary = "Получение сообщений чата", description = "Возвращает все сообщения для указанного чата")
-    @GetMapping("/chat/{chatId}")
+    @Operation(summary = "Получение всех сообщений чата", description = "Возвращает все сообщения для указанного чата")
+    @GetMapping("/chat/{chatId}/all")
     public List<MessageDTO> getAllMessagesByChatId(
             @PathVariable Long chatId,
             @AuthenticationPrincipal UserEntity userDetails) {
         return messageService.getMessagesByChat(chatId, userDetails);
     }
 
+    @Operation(summary = "Порционная выдача сообщений чата", description = "Возвращает сообщения указанного чата по указанному времени")
+    @GetMapping("/chat/{chatId}")
+    public List<MessageDTO> getMessagesBefore(
+            @PathVariable Long chatId,
+            @RequestParam(required = false) LocalDateTime localDateTime,
+            @RequestParam(defaultValue = "100") int size,
+            @AuthenticationPrincipal UserEntity userDetails) {
+        if (localDateTime == null) {
+            localDateTime = LocalDateTime.now();
+//            long unixSeconds = localDateTime.atZone(ZoneId.systemDefault()).toEpochSecond();
+//            log.info("Unix timestamp (сек): {}", unixSeconds);
+        }
+        return messageService.getMessagesBefore(chatId, localDateTime, size, userDetails);
+    }
 
     @Operation(summary = "Удаление сообщения", description = "Удаляет сообщение из чата")
     @DeleteMapping("/chat/{chatId}/msg/{msgId}")

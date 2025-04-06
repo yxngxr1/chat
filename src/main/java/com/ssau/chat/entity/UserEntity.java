@@ -37,7 +37,7 @@ public class UserEntity implements UserDetails {
     @Column(name = "role", nullable = false)
     private Role role;
 
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "date")
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt; // Дата регистрации
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

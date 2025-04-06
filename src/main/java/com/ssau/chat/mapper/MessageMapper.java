@@ -20,6 +20,7 @@ public class MessageMapper {
                 .senderId(messageEntity.getSender().getId())
                 .content(messageEntity.getContent())
                 .sentAt(messageEntity.getSentAt())
+                .updateAt(messageEntity.getUpdatedAt())
                 .build();
     }
 

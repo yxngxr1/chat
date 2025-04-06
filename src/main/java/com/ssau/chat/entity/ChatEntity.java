@@ -30,7 +30,7 @@ public class ChatEntity {
     @JoinColumn(name = "creator_id", nullable = false)
     private UserEntity creator;
 
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "date")
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt; // Дата создания чата
 
     @Enumerated(EnumType.STRING) // Хранить enum как строку (имена)

@@ -52,9 +52,10 @@ public class SecurityConfig {
                                 "/swagger-resources/*",
                                 "/ws/**").permitAll()
                         .requestMatchers(HttpMethod.POST,
-                                "/api/auth/access_token",
-                                "/api/auth/refresh_token",
-                                "/api/users").permitAll()
+                                "/api/auth/access_token", // получить токен
+                                "/api/auth/refresh_token", // обдумать
+                                "/api/users") // регистрация
+                                        .permitAll()
                         .requestMatchers(
                                 "/", "/index.html", "/*.ico", "/*.js", "/*.css").permitAll()
                         .anyRequest().authenticated()

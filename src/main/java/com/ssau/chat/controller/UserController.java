@@ -7,6 +7,7 @@ import com.ssau.chat.dto.User.UserUpdateRequest;
 import com.ssau.chat.entity.UserEntity;
 import com.ssau.chat.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -83,6 +84,15 @@ public class UserController {
     @GetMapping
     public List<UserDTO> getAllUsers() {
         return userService.getAllUsers();
+    }
+
+    @Operation( summary = "Поиск пользователей по имени", description = "Выполняет поиск пользователей, чьё имя содержит указанную подстроку (без учёта регистра)")
+    @GetMapping("/search")
+    public List<UserDTO> searchUsers(
+            @Parameter(description = "Подстрока имени пользователя для поиска", example = "uti")
+            @RequestParam("query") String query
+    ) {
+        return userService.searchUsers(query);
     }
 
     @Operation(summary = "Получить список пользователей чата", description = "Возвращает список пользователей, которые состоят в чате")

@@ -123,6 +123,13 @@ public class UserService implements UserDetailsService {
                 .collect(Collectors.toList());
     }
 
+    public List<UserDTO> searchUsers(String keyword) {
+        return userRepository
+                .searchByUsername(keyword).stream()
+                .map(UserMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
     public List<UserDTO> getAllUsersByChatId(Long chatId, UserEntity userDetails) {
         if (!chatUserService.userInChat(chatId, userDetails.getId())) {
             throw new AccessDeniedException("You are not in this chat");

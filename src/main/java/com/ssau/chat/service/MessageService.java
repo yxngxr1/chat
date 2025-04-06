@@ -15,20 +15,27 @@ import com.ssau.chat.repository.MessageRepository;
 import com.ssau.chat.repository.UserRepository;
 import com.ssau.chat.service.utils.ChatServiceHelper;
 import com.ssau.chat.service.utils.UserServiceHelper;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MessageService {
 
     private final SimpMessagingTemplate messagingTemplate;
+
+    private final EntityManager entityManager;
 
     private final ChatUserService chatUserService;
 
@@ -82,6 +89,7 @@ public class MessageService {
         }
 
         message.setContent(messageUpdateRequest.getContent());
+        message.setUpdatedAt(LocalDateTime.now());
         MessageEntity updatedMessage = messageRepository.save(message);
 
         return MessageMapper.toDto(updatedMessage);
@@ -108,7 +116,7 @@ public class MessageService {
             throw new AccessDeniedException("Тебя нет в этом чате");
         }
 
-        return messageRepository.findByChat_Id(chatId).stream()
+        return messageRepository.findByChatId(chatId).stream()
                 .map(MessageMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -119,6 +127,27 @@ public class MessageService {
                 .orElseThrow(() -> new EntityNotFoundException("Message not found with id: " + msgId));
     }
 
+
+    public List<MessageDTO> getMessagesBefore(Long chatId, LocalDateTime lastSentAt, int size, UserEntity userDetails) {
+        if (!chatUserService.userInChat(chatId, userDetails.getId())) {
+            throw new AccessDeniedException("Тебя нет в этом чате");
+        }
+        long startTime = System.currentTimeMillis();
+
+        LocalDateTime localDateTime = (lastSentAt != null) ? lastSentAt : LocalDateTime.now();
+        List<MessageEntity> messages = messageRepository.findMessagesUMOM(chatId, localDateTime, size);
+
+//        if (!messages.isEmpty()) log.info(messages.getLast().getSentAt().toString());
+        long endTime = System.currentTimeMillis();
+        long elapsedTime = endTime - startTime;
+
+//        log.info("Time to get messages from {}: {} мс", chatId, elapsedTime);
+
+        return messages.stream()
+                .map(MessageMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
     public boolean userIsMessageSender(UserEntity user, MessageEntity message) {
         return message.getSender().getId().equals(user.getId());
     }
@@ -126,5 +155,6 @@ public class MessageService {
     public boolean userIsMessageSender(Long userId, Long messageId) {
         return messageId.equals(userId);
     }
+
 }
 

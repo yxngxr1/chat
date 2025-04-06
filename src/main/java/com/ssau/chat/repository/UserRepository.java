@@ -18,6 +18,9 @@ public interface UserRepository extends JpaRepository<UserEntity, Long>{
     @Query("SELECT u FROM UserEntity u WHERE u.id IN :userIds")
     List<UserEntity> findUsernamesByIds(@Param("userIds") Set<Long> userIds);
 
+    @Query(value = "SELECT * FROM app_user WHERE username ILIKE %:query% LIMIT 10", nativeQuery = true)
+    List<UserEntity> searchByUsername(@Param("query") String query);
+
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
 

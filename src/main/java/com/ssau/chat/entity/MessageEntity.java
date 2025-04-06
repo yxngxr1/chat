@@ -5,9 +5,11 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "message", indexes = {
-        @Index(name = "idx_chat_id", columnList = "chat_id") // Индекс на chat_id
-})
+@Table(name = "message",
+    indexes = {
+        @Index(name = "idx_message_chat_id_sent_at", columnList = "chat_id, sent_at")
+    }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -28,11 +30,14 @@ public class MessageEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity sender; // Отправитель сообщения
 
-    @Column(name = "content", nullable = false, length = 10000)
+    @Column(name = "content", nullable = false, length = 10000) // от 1 до 40000 байт
     private String content; // Текст сообщения
 
     @Column(name = "sent_at", nullable = false, updatable = false)
     private LocalDateTime sentAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {

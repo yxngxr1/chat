@@ -67,5 +67,5 @@
    java -jar .\chat\target\chat-backend-0.0.1-SNAPSHOT.jar
 
 #### После выполнения этих шагов API с выдачей web (spa) приложения будет доступен на локальном сервере по умолчанию (http://localhost:8080).
-![img.png](img.png)
-![img_1.png](img_1.png)
+![img.png](maven-build-instruction/img.png)
+![img_1.png](maven-build-instruction/img_1.png)

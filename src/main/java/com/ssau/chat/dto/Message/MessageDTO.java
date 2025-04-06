@@ -31,5 +31,9 @@ public class MessageDTO {
     @NotBlank
     @Schema(description = "Дата и время отправки сообщения", example = "2025-03-20T14:30:00")
     private LocalDateTime sentAt; // Время отправки
+
+    @NotBlank
+    @Schema(description = "Дата и время изменения сообщения", example = "2025-03-20T14:30:00")
+    private LocalDateTime updateAt; // Время последнего изменения
 }
 

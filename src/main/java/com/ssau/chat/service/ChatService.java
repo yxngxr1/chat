@@ -132,6 +132,10 @@ public class ChatService {
                 .map(UserDTO::getUsername)
                 .collect(Collectors.joining(" "));
 
+        if (chatName.length() > 100) {
+            chatName = chatName.substring(0, 100);
+        }
+
         ChatEntity chat = ChatEntity.builder()
                 .name(chatName)
                 .createdAt(LocalDateTime.now())
